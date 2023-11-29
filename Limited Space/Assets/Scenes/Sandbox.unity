@@ -135,9 +135,9 @@ GameObject:
   - component: {fileID: 6371273}
   - component: {fileID: 6371272}
   - component: {fileID: 6371271}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Plane
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -415,14 +415,14 @@ Transform:
   m_GameObject: {fileID: 424120227}
   serializedVersion: 2
   m_LocalRotation: {x: -0.026167953, y: -0.026167953, z: -0.0006852313, w: 0.9993148}
-  m_LocalPosition: {x: 0.3625, y: 1.425, z: 1.025}
+  m_LocalPosition: {x: 0.3625, y: -0.32500005, z: 1.025}
   m_LocalScale: {x: -1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 637439566}
   - {fileID: 1633849463}
   - {fileID: 663483030}
-  m_Father: {fileID: 1359353289}
+  m_Father: {fileID: 1969435099}
   m_LocalEulerAnglesHint: {x: -3, y: -3, z: 0}
 --- !u!1 &482158745
 GameObject:
@@ -681,7 +681,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 424120228}
   - {fileID: 1969435099}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -700,14 +699,14 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
-  m_Height: 1.75
+  m_Radius: 0.5
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0.875, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!54 &1359353291
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -718,7 +717,7 @@ Rigidbody:
   serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 999
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -730,11 +729,11 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Constraints: 112
+  m_CollisionDetection: 2
 --- !u!114 &1359353292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -747,8 +746,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ba7791a3571d864980ad6e7a8f4c02e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gravityScale: 2
+  fallMultiplier: 2.5
+  jumpForce: 8
+  jumpCooldown: 0.1
+  airControl: 0.5
+  maxJumpCount: 1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  groundCheckDistance: 0.1
+  isGrounded: 0
   moveSpeed: 5
-  jumpForce: 5
+  sprintMultiplier: 1.5
+  rotationSpeed: 5
+  crouchHeight: 1
+  standHeight: 2
+  crouchSpeed: 0.2
+  playerCamera: {fileID: 1969435103}
+  headBobFrequency: 1.5
+  headBobAmplitude: 6.3
 --- !u!1 &1393996734
 GameObject:
   m_ObjectHideFlags: 3
@@ -797,9 +814,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_BindingMode: 1
   m_FollowOffset: {x: 0, y: 1.75, z: 0}
-  m_XDamping: 1
-  m_YDamping: 1
-  m_ZDamping: 1
+  m_XDamping: 0
+  m_YDamping: 0
+  m_ZDamping: 0
   m_AngularDampingMode: 0
   m_PitchDamping: 0
   m_YawDamping: 0
@@ -942,7 +959,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 424120228}
   m_Father: {fileID: 1359353289}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1969435100
@@ -1123,6 +1141,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2122897688}
   - component: {fileID: 2122897687}
+  - component: {fileID: 2122897689}
   m_Layer: 0
   m_Name: FPS Virtual Camera
   m_TagString: Untagged
@@ -1185,6 +1204,19 @@ Transform:
   - {fileID: 1393996735}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2122897689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2122897686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e986f1b9890c9394d9b9c190dfd77291, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookSpeed: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

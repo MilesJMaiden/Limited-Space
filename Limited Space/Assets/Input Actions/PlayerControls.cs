@@ -62,6 +62,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Sprint"",
+                    ""type"": ""Button"",
+                    ""id"": ""9eb91f08-2704-44f2-a6ee-a01550a829f6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Crouch"",
+                    ""type"": ""Button"",
+                    ""id"": ""ddf40203-b02e-4c3d-a1b6-91e969618b73"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -196,6 +214,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Fire"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""647bec4e-b71a-4a5c-9aa3-ed50e4f7455a"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Sprint"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""222a29cb-9dd4-45c0-b843-8c14b52b2831"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Crouch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -208,6 +248,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_Jump = m_FPSPlayerActions.FindAction("Jump", throwIfNotFound: true);
         m_FPSPlayerActions_Look = m_FPSPlayerActions.FindAction("Look", throwIfNotFound: true);
         m_FPSPlayerActions_Fire = m_FPSPlayerActions.FindAction("Fire", throwIfNotFound: true);
+        m_FPSPlayerActions_Sprint = m_FPSPlayerActions.FindAction("Sprint", throwIfNotFound: true);
+        m_FPSPlayerActions_Crouch = m_FPSPlayerActions.FindAction("Crouch", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -273,6 +315,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_Jump;
     private readonly InputAction m_FPSPlayerActions_Look;
     private readonly InputAction m_FPSPlayerActions_Fire;
+    private readonly InputAction m_FPSPlayerActions_Sprint;
+    private readonly InputAction m_FPSPlayerActions_Crouch;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -281,6 +325,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_FPSPlayerActions_Jump;
         public InputAction @Look => m_Wrapper.m_FPSPlayerActions_Look;
         public InputAction @Fire => m_Wrapper.m_FPSPlayerActions_Fire;
+        public InputAction @Sprint => m_Wrapper.m_FPSPlayerActions_Sprint;
+        public InputAction @Crouch => m_Wrapper.m_FPSPlayerActions_Crouch;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -302,6 +348,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Fire.started += instance.OnFire;
             @Fire.performed += instance.OnFire;
             @Fire.canceled += instance.OnFire;
+            @Sprint.started += instance.OnSprint;
+            @Sprint.performed += instance.OnSprint;
+            @Sprint.canceled += instance.OnSprint;
+            @Crouch.started += instance.OnCrouch;
+            @Crouch.performed += instance.OnCrouch;
+            @Crouch.canceled += instance.OnCrouch;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -318,6 +370,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Fire.started -= instance.OnFire;
             @Fire.performed -= instance.OnFire;
             @Fire.canceled -= instance.OnFire;
+            @Sprint.started -= instance.OnSprint;
+            @Sprint.performed -= instance.OnSprint;
+            @Sprint.canceled -= instance.OnSprint;
+            @Crouch.started -= instance.OnCrouch;
+            @Crouch.performed -= instance.OnCrouch;
+            @Crouch.canceled -= instance.OnCrouch;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -341,5 +399,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnFire(InputAction.CallbackContext context);
+        void OnSprint(InputAction.CallbackContext context);
+        void OnCrouch(InputAction.CallbackContext context);
     }
 }
