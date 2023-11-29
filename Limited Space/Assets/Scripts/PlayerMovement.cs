@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private PlayerControls playerControls;
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
+    [Header("Camera Settings")]
+    [SerializeField] private CinemachineVirtualCamera cinemachineCamera; // Reference to the Cinemachine Virtual Camera
+    private Vector3 originalFollowOffset;
+
+
 
     private Vector3 originalScale; // Original scale of the player
     private float originalColliderHeight; // Original collider height
@@ -108,6 +114,23 @@ public class AdvancedPlayerMovement : MonoBehaviour
         originalFallMultiplier = fallMultiplier;
         originalJumpForce = jumpForce;
         originalMoveSpeed = moveSpeed;
+
+        isSmall = false;
+
+        // Find and assign the Cinemachine Virtual Camera
+        cinemachineCamera = GameObject.Find("FPS Virtual Camera").GetComponent<CinemachineVirtualCamera>();
+        if (cinemachineCamera != null)
+        {
+            var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
+            if (transposer != null)
+            {
+                originalFollowOffset = transposer.m_FollowOffset;
+            }
+        }
+        else
+        {
+            Debug.LogError("Cinemachine Virtual Camera not found in the scene.");
+        }
     }
 
     private void OnEnable()
@@ -130,7 +153,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         {
             HandleCrouchInput();
             AlignPlayerWithCameraDirection();
-            HandleHeadBobbing();
         }
     }
 
@@ -147,15 +169,13 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
             CheckGrounded();
 
-            if (isGrounded)
+            if (isGrounded && wasInAir)
             {
-                if (wasInAir)
-                {
-                    wasInAir = false;
-                    ResetJumpState(); // Reset jump state when grounded
-                }
+                wasInAir = false;
+                Debug.Log("Landed - Resetting Jump State");
+                ResetJumpState(); // Force reset jump state when grounded
             }
-            else
+            else if (!isGrounded)
             {
                 wasInAir = true;
             }
@@ -201,7 +221,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         if (currentJumpCount < maxJumpCount && !isCrouching && canJump)
         {
+            Debug.Log("Jumping with force: " + jumpForce);
             PerformJump();
+        }
+        else
+        {
+            Debug.Log($"Cannot jump: Count={currentJumpCount}, Crouching={isCrouching}, CanJump={canJump}");
         }
     }
 
@@ -224,14 +249,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-
     private void ResetJumpState()
     {
-        if (isGrounded && Time.time - lastJumpTime >= jumpCooldown)
-        {
-            currentJumpCount = 0;
-            canJump = true;
-        }
+        currentJumpCount = 0;
+        canJump = true;
     }
 
     private IEnumerator JumpCooldown()
@@ -250,7 +271,14 @@ public class AdvancedPlayerMovement : MonoBehaviour
         Vector3 origin = transform.position + capsuleCollider.center;
         bool rayGrounded = Physics.SphereCast(origin, groundCheckRadius, Vector3.down, out RaycastHit hit, capsuleCollider.height / 2 + groundCheckDistance, groundLayer);
 
-        isGrounded = rayGrounded;
+        if (rayGrounded != isGrounded)
+        {
+            isGrounded = rayGrounded;
+            if (isGrounded)
+            {
+                ResetJumpState();
+            }
+        }
     }
 
     private void ApplyCustomGravity()
@@ -306,66 +334,55 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private IEnumerator ChangeSize()
     {
         isChangingSize = true;
+        isSmall = !isSmall;
 
-        Vector3 targetScale = isSmall ? Vector3.one : Vector3.one / sizeReductionFactor;
+        Vector3 targetScale = isSmall ? Vector3.one / sizeReductionFactor : Vector3.one;
         Vector3 initialScale = transform.localScale;
-        Vector3 initialCameraPosition = playerCamera.transform.localPosition;
-        Vector3 targetCameraPosition = CalculateTargetCameraPosition(initialCameraPosition);
 
-        CinemachineLook cameraScript = playerCamera.GetComponent<CinemachineLook>();
-        if (cameraScript != null)
+        var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
+        if (transposer == null)
         {
-            // Adjust the camera offset based on the player's current size
-            cameraScript.AdjustCameraOffset(isSmall, sizeReductionFactor);
+            Debug.LogError("CinemachineTransposer component not found on the Cinemachine camera.");
+            yield break;
         }
 
-        float elapsedTime = 0;
+        Vector3 initialFollowOffset = transposer.m_FollowOffset;
+        Vector3 targetFollowOffset = isSmall ?
+            new Vector3(initialFollowOffset.x, initialFollowOffset.y / sizeReductionFactor, initialFollowOffset.z) :
+            originalFollowOffset;
 
+        float elapsedTime = 0;
         while (elapsedTime < shrinkDuration)
         {
             float lerpFactor = elapsedTime / shrinkDuration;
             transform.localScale = Vector3.Lerp(initialScale, targetScale, lerpFactor);
-            playerCamera.transform.localPosition = Vector3.Lerp(initialCameraPosition, targetCameraPosition, lerpFactor);
+            transposer.m_FollowOffset = Vector3.Lerp(initialFollowOffset, targetFollowOffset, lerpFactor);
 
-            // Adjust physics properties proportionally here if necessary
+            UpdatePlayerProperties(isSmall ? 1f / sizeReductionFactor : 1f, lerpFactor);
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
         transform.localScale = targetScale;
-        playerCamera.transform.localPosition = targetCameraPosition;
-        isSmall = !isSmall;
-
-        // Reset or adjust physics properties to final values here if necessary
+        transposer.m_FollowOffset = targetFollowOffset;
+        UpdatePlayerProperties(isSmall ? 1f / sizeReductionFactor : 1f);
 
         isChangingSize = false;
+
+        yield return new WaitForSeconds(0.1f); // Allow physics to settle
+        CheckGrounded(); // Recheck grounded state
+        ResetJumpState(); // Reset jump state to allow jumping again
     }
 
-
-    private Vector3 CalculateTargetCameraPosition(Vector3 initialCameraPosition)
+    private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
     {
-        // Calculate the target position for the camera based on the player's target scale
-        return new Vector3(
-            initialCameraPosition.x,
-            initialCameraPosition.y / (isSmall ? sizeReductionFactor : 1f),
-            initialCameraPosition.z
-        );
-    }
-
-    private void HandleHeadBobbing()
-    {
-        if (isGrounded)
-        {
-            headBobTimer += Time.deltaTime * headBobFrequency;
-            Vector3 newCameraPosition = cameraStartLocalPosition + new Vector3(0, Mathf.Sin(headBobTimer) * headBobAmplitude, 0);
-            playerCamera.transform.localPosition = newCameraPosition;
-        }
-        else
-        {
-            headBobTimer = 0;
-            playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, cameraStartLocalPosition, Time.deltaTime * headBobFrequency);
-        }
+        jumpForce = Mathf.Lerp(jumpForce, originalJumpForce * scaleFactor, lerpFactor);
+        // Adjust player properties such as jump force and movement speed
+        float newJumpForce = Mathf.Lerp(originalJumpForce, originalJumpForce * scaleFactor, lerpFactor);
+        Debug.Log($"Updating Jump Force: {newJumpForce}");
+        moveSpeed = Mathf.Lerp(moveSpeed, originalMoveSpeed * scaleFactor, lerpFactor);
+        // Add other properties if needed
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -373,6 +390,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
         if ((groundLayer.value & (1 << collision.gameObject.layer)) > 0)
         {
             isGrounded = true;
+            Debug.Log("OnCollisionEnter - Grounded");
         }
     }
 
@@ -381,6 +399,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
         if ((groundLayer.value & (1 << collision.gameObject.layer)) > 0)
         {
             isGrounded = false;
+            Debug.Log("OnCollisionExit - Not Grounded");
         }
     }
 }
