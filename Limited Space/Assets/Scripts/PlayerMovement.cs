@@ -13,6 +13,17 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
 
+    private Vector3 originalScale; // Original scale of the player
+    private float originalColliderHeight; // Original collider height
+    private float originalColliderRadius; // Original collider radius
+    private float originalGravityScale; // Original gravity scale
+    private float originalFallMultiplier; // Original fall multiplier
+    private float originalJumpForce; // Original jump force
+    private float originalMoveSpeed; // Original movement speed
+
+    [SerializeField] private GameObject playerWeapon; // Reference to the player's weapon
+    private Vector3 originalWeaponScale; // To store the original scale of the weapon
+
     // Gravity and Jumping
     [Header("Gravity and Jump Settings")]
     [SerializeField, Tooltip("Custom gravity scale")]
@@ -74,6 +85,13 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private Vector3 cameraStartLocalPosition;
     private float headBobTimer;
 
+    [Header("Size Change Settings")]
+    [SerializeField] private float sizeReductionFactor = 10f;
+    [SerializeField] private float shrinkDuration = 1f; // Duration of the shrinking process
+    private bool isSmall = false;
+    private bool isChangingSize = false; // Flag to indicate if currently changing size
+
+
     private void Awake()
     {
         // Initialize controls and components
@@ -81,49 +99,66 @@ public class AdvancedPlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         capsuleCollider = GetComponent<CapsuleCollider>();
         cameraStartLocalPosition = playerCamera.transform.localPosition;
+
+        // Store original sizes and physics values
+        originalScale = transform.localScale;
+        originalColliderHeight = capsuleCollider.height;
+        originalColliderRadius = capsuleCollider.radius;
+        originalGravityScale = gravityScale;
+        originalFallMultiplier = fallMultiplier;
+        originalJumpForce = jumpForce;
+        originalMoveSpeed = moveSpeed;
     }
 
     private void OnEnable()
     {
         playerControls.FPSPlayerActions.Enable();
         playerControls.FPSPlayerActions.Jump.performed += OnJumpPerformed;
+        playerControls.FPSPlayerActions.ChangeSize.performed += OnSizeChangePerformed;
     }
 
     private void OnDisable()
     {
         playerControls.FPSPlayerActions.Disable();
         playerControls.FPSPlayerActions.Jump.performed -= OnJumpPerformed;
+        playerControls.FPSPlayerActions.ChangeSize.performed -= OnSizeChangePerformed;
     }
 
     private void Update()
     {
-        HandleCrouchInput();
-        AlignPlayerWithCameraDirection();
-        HandleHeadBobbing();
+        if (!isChangingSize)
+        {
+            HandleCrouchInput();
+            AlignPlayerWithCameraDirection();
+            HandleHeadBobbing();
+        }
     }
 
     private void FixedUpdate()
     {
-        Move();
-        if (!isGrounded)
+        if (!isChangingSize)
         {
-            ApplyCustomGravity();
-        }
-
-
-        CheckGrounded();
-
-        if (isGrounded)
-        {
-            if (wasInAir)
+            Move();
+            if (!isGrounded)
             {
-                wasInAir = false;
-                ResetJumpState(); // Reset jump state when grounded
+                ApplyCustomGravity();
             }
-        }
-        else
-        {
-            wasInAir = true;
+
+
+            CheckGrounded();
+
+            if (isGrounded)
+            {
+                if (wasInAir)
+                {
+                    wasInAir = false;
+                    ResetJumpState(); // Reset jump state when grounded
+                }
+            }
+            else
+            {
+                wasInAir = true;
+            }
         }
     }
 
@@ -258,6 +293,64 @@ public class AdvancedPlayerMovement : MonoBehaviour
         // Ensure the final height and center are exactly at the target values
         capsuleCollider.height = targetHeight;
         capsuleCollider.center = new Vector3(0, targetHeight / 2, 0);
+    }
+
+    private void OnSizeChangePerformed(InputAction.CallbackContext context)
+    {
+        if (!isChangingSize)
+        {
+            StartCoroutine(ChangeSize());
+        }
+    }
+
+    private IEnumerator ChangeSize()
+    {
+        isChangingSize = true;
+
+        Vector3 targetScale = isSmall ? Vector3.one : Vector3.one / sizeReductionFactor;
+        Vector3 initialScale = transform.localScale;
+        Vector3 initialCameraPosition = playerCamera.transform.localPosition;
+        Vector3 targetCameraPosition = CalculateTargetCameraPosition(initialCameraPosition);
+
+        CinemachineLook cameraScript = playerCamera.GetComponent<CinemachineLook>();
+        if (cameraScript != null)
+        {
+            // Adjust the camera offset based on the player's current size
+            cameraScript.AdjustCameraOffset(isSmall, sizeReductionFactor);
+        }
+
+        float elapsedTime = 0;
+
+        while (elapsedTime < shrinkDuration)
+        {
+            float lerpFactor = elapsedTime / shrinkDuration;
+            transform.localScale = Vector3.Lerp(initialScale, targetScale, lerpFactor);
+            playerCamera.transform.localPosition = Vector3.Lerp(initialCameraPosition, targetCameraPosition, lerpFactor);
+
+            // Adjust physics properties proportionally here if necessary
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.localScale = targetScale;
+        playerCamera.transform.localPosition = targetCameraPosition;
+        isSmall = !isSmall;
+
+        // Reset or adjust physics properties to final values here if necessary
+
+        isChangingSize = false;
+    }
+
+
+    private Vector3 CalculateTargetCameraPosition(Vector3 initialCameraPosition)
+    {
+        // Calculate the target position for the camera based on the player's target scale
+        return new Vector3(
+            initialCameraPosition.x,
+            initialCameraPosition.y / (isSmall ? sizeReductionFactor : 1f),
+            initialCameraPosition.z
+        );
     }
 
     private void HandleHeadBobbing()

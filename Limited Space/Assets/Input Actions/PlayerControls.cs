@@ -80,6 +80,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ChangeSize"",
+                    ""type"": ""Button"",
+                    ""id"": ""274aa2ca-76d3-4b62-9f7f-3b1a456a0a29"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -236,6 +245,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Crouch"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1b1bf52c-4ca3-40c3-9de8-edb07efda981"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ChangeSize"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4817c344-9f74-480a-884a-c42364e6e7b1"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ChangeSize"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -250,6 +281,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_Fire = m_FPSPlayerActions.FindAction("Fire", throwIfNotFound: true);
         m_FPSPlayerActions_Sprint = m_FPSPlayerActions.FindAction("Sprint", throwIfNotFound: true);
         m_FPSPlayerActions_Crouch = m_FPSPlayerActions.FindAction("Crouch", throwIfNotFound: true);
+        m_FPSPlayerActions_ChangeSize = m_FPSPlayerActions.FindAction("ChangeSize", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -317,6 +349,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_Fire;
     private readonly InputAction m_FPSPlayerActions_Sprint;
     private readonly InputAction m_FPSPlayerActions_Crouch;
+    private readonly InputAction m_FPSPlayerActions_ChangeSize;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -327,6 +360,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Fire => m_Wrapper.m_FPSPlayerActions_Fire;
         public InputAction @Sprint => m_Wrapper.m_FPSPlayerActions_Sprint;
         public InputAction @Crouch => m_Wrapper.m_FPSPlayerActions_Crouch;
+        public InputAction @ChangeSize => m_Wrapper.m_FPSPlayerActions_ChangeSize;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -354,6 +388,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Crouch.started += instance.OnCrouch;
             @Crouch.performed += instance.OnCrouch;
             @Crouch.canceled += instance.OnCrouch;
+            @ChangeSize.started += instance.OnChangeSize;
+            @ChangeSize.performed += instance.OnChangeSize;
+            @ChangeSize.canceled += instance.OnChangeSize;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -376,6 +413,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Crouch.started -= instance.OnCrouch;
             @Crouch.performed -= instance.OnCrouch;
             @Crouch.canceled -= instance.OnCrouch;
+            @ChangeSize.started -= instance.OnChangeSize;
+            @ChangeSize.performed -= instance.OnChangeSize;
+            @ChangeSize.canceled -= instance.OnChangeSize;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -401,5 +441,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnFire(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
+        void OnChangeSize(InputAction.CallbackContext context);
     }
 }

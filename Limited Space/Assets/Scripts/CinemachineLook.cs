@@ -59,4 +59,27 @@ public class CinemachineLook : MonoBehaviour
             LockCursor();
         }
     }
+
+    // Method to adjust camera offset based on player size
+    public void AdjustCameraOffset(bool isSmall, float sizeReductionFactor)
+    {
+        if (cinemachineCamera != null)
+        {
+            var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
+            if (transposer != null)
+            {
+                // Adjust the 'Follow Offset' based on whether the player is small or not
+                if (isSmall)
+                {
+                    // Calculate new offset for when the player is small
+                    transposer.m_FollowOffset /= sizeReductionFactor;
+                }
+                else
+                {
+                    // Reset to original offset when the player returns to normal size
+                    transposer.m_FollowOffset *= sizeReductionFactor;
+                }
+            }
+        }
+    }
 }
