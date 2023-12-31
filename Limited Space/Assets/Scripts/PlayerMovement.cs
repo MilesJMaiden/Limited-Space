@@ -205,15 +205,20 @@ public class AdvancedPlayerMovement : MonoBehaviour
         if (isGrounded)
         {
             float currentSpeed = moveSpeed * (playerControls.FPSPlayerActions.Sprint.ReadValue<float>() > 0 ? sprintMultiplier : 1f);
-            // Apply movement while preserving y-axis velocity (for gravity/jumping)
             rb.velocity = new Vector3(moveDirection.x * currentSpeed, rb.velocity.y, moveDirection.z * currentSpeed);
         }
         else
         {
             // Apply air control
-            Vector3 airVelocity = moveDirection * moveSpeed * airControl;
-            rb.velocity = new Vector3(rb.velocity.x + airVelocity.x, rb.velocity.y, rb.velocity.z + airVelocity.z);
-            rb.velocity = Vector3.ClampMagnitude(rb.velocity, moveSpeed * sprintMultiplier);
+            Vector3 airVelocity = new Vector3(moveDirection.x * moveSpeed, rb.velocity.y, moveDirection.z * moveSpeed);
+            airVelocity = Vector3.ClampMagnitude(airVelocity, moveSpeed * sprintMultiplier);
+
+            // Adjust air velocity based on player input, but prevent reversing direction
+            rb.velocity = new Vector3(
+                Mathf.Lerp(rb.velocity.x, Mathf.Max(rb.velocity.x, airVelocity.x), airControl * Time.fixedDeltaTime),
+                rb.velocity.y,
+                Mathf.Lerp(rb.velocity.z, Mathf.Max(rb.velocity.z, airVelocity.z), airControl * Time.fixedDeltaTime)
+            );
         }
     }
 
@@ -251,47 +256,46 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void ResetJumpState()
     {
-        currentJumpCount = 0;
-        canJump = true;
-    }
-
-    private IEnumerator JumpCooldown()
-    {
-        yield return new WaitForSeconds(jumpCooldown);
-        // Check if player landed during the cooldown
-        if (isGrounded)
+        // Reset only if the player was in the air for a noticeable amount of time
+        if (Time.time - lastJumpTime > jumpCooldown)
         {
-            canJump = true;
             currentJumpCount = 0;
+            canJump = true;
         }
     }
 
     private void CheckGrounded()
     {
         Vector3 origin = transform.position + capsuleCollider.center;
-        bool rayGrounded = Physics.SphereCast(origin, groundCheckRadius, Vector3.down, out RaycastHit hit, capsuleCollider.height / 2 + groundCheckDistance, groundLayer);
+        float adjustedRadius = groundCheckRadius * transform.localScale.y;
+        float adjustedDistance = groundCheckDistance * transform.localScale.y;
 
-        if (rayGrounded != isGrounded)
+        bool rayGrounded = Physics.SphereCast(origin, adjustedRadius, Vector3.down, out RaycastHit hit, capsuleCollider.height / 2 + adjustedDistance, groundLayer);
+
+        if (rayGrounded && !isGrounded)
         {
-            isGrounded = rayGrounded;
-            if (isGrounded)
-            {
-                ResetJumpState();
-            }
+            isGrounded = true;
+            ResetJumpState();
+        }
+        else if (!rayGrounded)
+        {
+            isGrounded = false;
         }
     }
 
     private void ApplyCustomGravity()
     {
+        float scaleMultiplier = transform.localScale.y / originalScale.y; // Scale multiplier based on the player's current Y scale
+
         if (!isGrounded || rb.velocity.y < 0)
         {
             // Apply stronger gravity when falling
-            rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
+            rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime * scaleMultiplier;
         }
         else if (rb.velocity.y > 0 && !playerControls.FPSPlayerActions.Jump.IsPressed())
         {
             // Apply normal gravity when ascending and not holding jump
-            rb.velocity += Vector3.up * Physics.gravity.y * (gravityScale - 1) * Time.fixedDeltaTime;
+            rb.velocity += Vector3.up * Physics.gravity.y * (gravityScale - 1) * Time.fixedDeltaTime * scaleMultiplier;
         }
     }
 
@@ -377,11 +381,13 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
     {
-        jumpForce = Mathf.Lerp(jumpForce, originalJumpForce * scaleFactor, lerpFactor);
-        // Adjust player properties such as jump force and movement speed
-        float newJumpForce = Mathf.Lerp(originalJumpForce, originalJumpForce * scaleFactor, lerpFactor);
-        Debug.Log($"Updating Jump Force: {newJumpForce}");
+        // Adjust jump force relative to the size
+        float scaleJumpMultiplier = Mathf.Clamp(scaleFactor, 0.5f, 2f); // Clamp the scale factor for jump force to avoid extreme values
+        jumpForce = Mathf.Lerp(jumpForce, originalJumpForce * scaleJumpMultiplier, lerpFactor);
+
+        // Adjust movement speed
         moveSpeed = Mathf.Lerp(moveSpeed, originalMoveSpeed * scaleFactor, lerpFactor);
+
         // Add other properties if needed
     }
 
