@@ -72,6 +72,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     // Crouching settings
     [Header("Crouch Settings")]
+    public bool toggleCrouch = true; // Toggle between 'hold to crouch' and 'toggle crouch'
     [SerializeField, Tooltip("Height while crouching")]
     private float crouchHeight = 1.0f;
     [SerializeField, Tooltip("Height while standing")]
@@ -79,6 +80,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField, Tooltip("Speed of transitioning from crouch to stand")]
     private float crouchSpeed = 4.0f;
     private bool isCrouching;
+    [SerializeField] private float crouchJumpMultiplier = 1.2f; // Multiplier for jump force when crouched
 
     // Camera and head bobbing settings
     [Header("Camera Settings")]
@@ -184,9 +186,17 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void HandleCrouchInput()
     {
-        if (playerControls.FPSPlayerActions.Crouch.triggered)
+        if (toggleCrouch)
         {
-            ToggleCrouch();
+            if (playerControls.FPSPlayerActions.Crouch.triggered)
+            {
+                ToggleCrouch();
+            }
+        }
+        else
+        {
+            isCrouching = playerControls.FPSPlayerActions.Crouch.IsPressed();
+            AdjustCrouchHeight(isCrouching ? crouchHeight : standHeight);
         }
     }
 
@@ -224,7 +234,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void OnJumpPerformed(InputAction.CallbackContext context)
     {
-        if (currentJumpCount < maxJumpCount && !isCrouching && canJump)
+        if (currentJumpCount < maxJumpCount && canJump)
         {
             Debug.Log("Jumping with force: " + jumpForce);
             PerformJump();
@@ -237,11 +247,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void PerformJump()
     {
+        float jumpForceToUse = isCrouching ? jumpForce * crouchJumpMultiplier : jumpForce;
+
         // Reset vertical velocity to zero before applying jump force
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-        // Add jump force
-        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        rb.AddForce(Vector3.up * jumpForceToUse, ForceMode.Impulse);
 
         // Update jump state
         isGrounded = false;
@@ -311,20 +321,25 @@ public class AdvancedPlayerMovement : MonoBehaviour
         Vector3 originalCenter = capsuleCollider.center;
         float timeElapsed = 0f;
 
+        var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
+        Vector3 originalFollowOffset = transposer.m_FollowOffset;
+        Vector3 targetFollowOffset = new Vector3(originalFollowOffset.x, targetHeight, originalFollowOffset.z);
+
         while (timeElapsed < crouchSpeed)
         {
-            // Calculate the current height and center based on the elapsed time
             capsuleCollider.height = Mathf.Lerp(originalHeight, targetHeight, timeElapsed / crouchSpeed);
             capsuleCollider.center = new Vector3(0, capsuleCollider.height / 2, 0);
 
-            // Increment the elapsed time
+            // Adjust Cinemachine camera follow offset
+            transposer.m_FollowOffset.y = Mathf.Lerp(originalFollowOffset.y, targetFollowOffset.y, timeElapsed / crouchSpeed);
+
             timeElapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Ensure the final height and center are exactly at the target values
         capsuleCollider.height = targetHeight;
         capsuleCollider.center = new Vector3(0, targetHeight / 2, 0);
+        transposer.m_FollowOffset = targetFollowOffset;
     }
 
     private void OnSizeChangePerformed(InputAction.CallbackContext context)

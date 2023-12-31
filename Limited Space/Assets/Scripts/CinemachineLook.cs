@@ -4,12 +4,15 @@ using UnityEngine.InputSystem;
 
 public class CinemachineLook : MonoBehaviour
 {
-    public float lookSpeed = 1.0f;
+    public float mouseSensitivity = 100.0f;
+    public float verticalRotationLimit = 80f; // Limit for vertical rotation
+
     private PlayerControls playerControls;
     private CinemachineVirtualCamera cinemachineCamera;
     private CinemachinePOV povComponent;
 
-    private Vector3 originalFollowOffset;
+    private float mouseX, mouseY;
+    private float verticalRotation = 0f; // Keep track of the vertical rotation separately
 
     private void Awake()
     {
@@ -32,9 +35,16 @@ public class CinemachineLook : MonoBehaviour
 
     private void Update()
     {
-        Vector2 lookInput = playerControls.FPSPlayerActions.Look.ReadValue<Vector2>() * lookSpeed;
-        povComponent.m_HorizontalAxis.Value += lookInput.x * Time.deltaTime;
-        povComponent.m_VerticalAxis.Value += lookInput.y * Time.deltaTime;
+        mouseX = playerControls.FPSPlayerActions.Look.ReadValue<Vector2>().x * mouseSensitivity * Time.deltaTime;
+        mouseY = playerControls.FPSPlayerActions.Look.ReadValue<Vector2>().y * mouseSensitivity * Time.deltaTime;
+
+        // Invert the vertical axis
+        verticalRotation -= mouseY;
+        verticalRotation = Mathf.Clamp(verticalRotation, -verticalRotationLimit, verticalRotationLimit);
+
+        // Apply the rotations
+        povComponent.m_VerticalAxis.Value = verticalRotation;
+        povComponent.m_HorizontalAxis.Value += mouseX;
     }
 
     private void LockCursor()
@@ -49,7 +59,6 @@ public class CinemachineLook : MonoBehaviour
         Cursor.visible = true;
     }
 
-    // Optional: Call this method to toggle cursor lock state
     public void ToggleCursorLock()
     {
         if (Cursor.lockState == CursorLockMode.Locked)
@@ -61,6 +70,4 @@ public class CinemachineLook : MonoBehaviour
             LockCursor();
         }
     }
-
- 
 }
