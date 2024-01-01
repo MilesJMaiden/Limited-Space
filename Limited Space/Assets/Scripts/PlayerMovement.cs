@@ -49,6 +49,8 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField, Tooltip("Distance to check for ground")]
     private float groundCheckDistance = 0.1f;
 
+    private bool isJumping;
+
     // Ground checking
     private float groundedCheckDelay = 0.05f;
     private float lastTimeGrounded;
@@ -156,6 +158,13 @@ public class AdvancedPlayerMovement : MonoBehaviour
             HandleCrouchInput();
             AlignPlayerWithCameraDirection();
         }
+
+        // New: Check if the player has landed to reset jump state
+        if (isGrounded && isJumping)
+        {
+            isJumping = false;
+            ResetJumpState();
+        }
     }
 
     private void FixedUpdate()
@@ -168,14 +177,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 ApplyCustomGravity();
             }
 
-
             CheckGrounded();
 
             if (isGrounded && wasInAir)
             {
                 wasInAir = false;
-                Debug.Log("Landed - Resetting Jump State");
-                ResetJumpState(); // Force reset jump state when grounded
+                ResetJumpState(); // Reset jump state when grounded
             }
             else if (!isGrounded)
             {
@@ -234,10 +241,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void OnJumpPerformed(InputAction.CallbackContext context)
     {
-        if (currentJumpCount < maxJumpCount && canJump)
+        if (currentJumpCount < maxJumpCount && canJump && isGrounded)
         {
-            Debug.Log("Jumping with force: " + jumpForce);
             PerformJump();
+            isJumping = true; // Set flag when jump is performed
         }
         else
         {
@@ -249,25 +256,21 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         float jumpForceToUse = isCrouching ? jumpForce * crouchJumpMultiplier : jumpForce;
 
-        // Reset vertical velocity to zero before applying jump force
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         rb.AddForce(Vector3.up * jumpForceToUse, ForceMode.Impulse);
 
-        // Update jump state
-        isGrounded = false;
         currentJumpCount++;
         lastJumpTime = Time.time;
 
         if (currentJumpCount >= maxJumpCount)
         {
-            canJump = false; // Disable further jumps until reset
+            canJump = false;
         }
     }
 
     private void ResetJumpState()
     {
-        // Reset only if the player was in the air for a noticeable amount of time
-        if (Time.time - lastJumpTime > jumpCooldown)
+        if (isGrounded)
         {
             currentJumpCount = 0;
             canJump = true;
@@ -319,27 +322,35 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         float originalHeight = capsuleCollider.height;
         Vector3 originalCenter = capsuleCollider.center;
-        float timeElapsed = 0f;
 
         var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
-        Vector3 originalFollowOffset = transposer.m_FollowOffset;
-        Vector3 targetFollowOffset = new Vector3(originalFollowOffset.x, targetHeight, originalFollowOffset.z);
+        float originalFollowOffsetY = transposer.m_FollowOffset.y;
 
+        // Calculate the change in height
+        float heightChange = targetHeight - originalHeight;
+
+        // Declare newFollowOffsetY outside of the loop
+        float newFollowOffsetY = originalFollowOffsetY;
+
+        float timeElapsed = 0f;
         while (timeElapsed < crouchSpeed)
         {
             capsuleCollider.height = Mathf.Lerp(originalHeight, targetHeight, timeElapsed / crouchSpeed);
-            capsuleCollider.center = new Vector3(0, capsuleCollider.height / 2, 0);
 
-            // Adjust Cinemachine camera follow offset
-            transposer.m_FollowOffset.y = Mathf.Lerp(originalFollowOffset.y, targetFollowOffset.y, timeElapsed / crouchSpeed);
+            // Adjust the center to keep the bottom of the collider at the same position
+            capsuleCollider.center = new Vector3(originalCenter.x, originalCenter.y + heightChange / 2 * (timeElapsed / crouchSpeed), originalCenter.z);
+
+            // Calculate and interpolate the camera follow offset
+            newFollowOffsetY = isSmall ? (originalFollowOffset.y + heightChange / 2) / sizeReductionFactor : originalFollowOffset.y + heightChange / 2;
+            transposer.m_FollowOffset.y = Mathf.Lerp(originalFollowOffsetY, newFollowOffsetY, timeElapsed / crouchSpeed);
 
             timeElapsed += Time.deltaTime;
             yield return null;
         }
 
         capsuleCollider.height = targetHeight;
-        capsuleCollider.center = new Vector3(0, targetHeight / 2, 0);
-        transposer.m_FollowOffset = targetFollowOffset;
+        capsuleCollider.center = new Vector3(originalCenter.x, originalCenter.y + heightChange / 2, originalCenter.z);
+        transposer.m_FollowOffset.y = newFollowOffsetY;
     }
 
     private void OnSizeChangePerformed(InputAction.CallbackContext context)
@@ -359,16 +370,18 @@ public class AdvancedPlayerMovement : MonoBehaviour
         Vector3 initialScale = transform.localScale;
 
         var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
-        if (transposer == null)
-        {
-            Debug.LogError("CinemachineTransposer component not found on the Cinemachine camera.");
-            yield break;
-        }
-
         Vector3 initialFollowOffset = transposer.m_FollowOffset;
-        Vector3 targetFollowOffset = isSmall ?
-            new Vector3(initialFollowOffset.x, initialFollowOffset.y / sizeReductionFactor, initialFollowOffset.z) :
-            originalFollowOffset;
+        Vector3 targetFollowOffset = initialFollowOffset;
+
+        // Adjust camera follow offset based on new size
+        if (isSmall)
+        {
+            targetFollowOffset.y = originalFollowOffset.y / sizeReductionFactor;
+        }
+        else
+        {
+            targetFollowOffset = originalFollowOffset;
+        }
 
         float elapsedTime = 0;
         while (elapsedTime < shrinkDuration)
@@ -376,7 +389,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
             float lerpFactor = elapsedTime / shrinkDuration;
             transform.localScale = Vector3.Lerp(initialScale, targetScale, lerpFactor);
             transposer.m_FollowOffset = Vector3.Lerp(initialFollowOffset, targetFollowOffset, lerpFactor);
-
             UpdatePlayerProperties(isSmall ? 1f / sizeReductionFactor : 1f, lerpFactor);
 
             elapsedTime += Time.deltaTime;
@@ -389,9 +401,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
         isChangingSize = false;
 
-        yield return new WaitForSeconds(0.1f); // Allow physics to settle
-        CheckGrounded(); // Recheck grounded state
-        ResetJumpState(); // Reset jump state to allow jumping again
+        // Check and adjust crouch height if necessary
+        if (isCrouching)
+        {
+            float newCrouchHeight = crouchHeight / (isSmall ? sizeReductionFactor : 1f);
+            StartCoroutine(AdjustCrouchHeight(newCrouchHeight));
+        }
     }
 
     private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
