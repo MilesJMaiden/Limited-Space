@@ -70,4 +70,12 @@ public class CinemachineLook : MonoBehaviour
             LockCursor();
         }
     }
+
+    public void SetCameraMovementEnabled(bool isEnabled)
+    {
+        if (povComponent != null)
+        {
+            povComponent.enabled = isEnabled;
+        }
+    }
 }

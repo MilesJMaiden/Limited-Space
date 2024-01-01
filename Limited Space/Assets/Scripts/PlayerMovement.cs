@@ -17,8 +17,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField] private CinemachineVirtualCamera cinemachineCamera; // Reference to the Cinemachine Virtual Camera
     private Vector3 originalFollowOffset;
 
-
-
     private Vector3 originalScale; // Original scale of the player
     private float originalColliderHeight; // Original collider height
     private float originalColliderRadius; // Original collider radius

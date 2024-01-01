@@ -89,6 +89,42 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchMode"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaa9a269-53ad-4528-af44-c7c422e47e26"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""AdjustObjectDistance"",
+                    ""type"": ""Value"",
+                    ""id"": ""4086f379-16f0-4f9e-b586-d01a412520ee"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""RotateObject"",
+                    ""type"": ""Value"",
+                    ""id"": ""e66842b2-3553-4b49-a799-357062a00a3b"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""RotateObjectModeToggle"",
+                    ""type"": ""Button"",
+                    ""id"": ""381739d8-35c5-4aca-a622-37a69333967c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -267,6 +303,61 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""ChangeSize"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""79be4cf0-d840-4196-ba5a-92ec7bf4c941"",
+                    ""path"": ""<Keyboard>/p"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e5e3e9ed-ed89-48fb-9982-068f36421f01"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchMode"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""255e7a93-0d4c-42ed-be11-80cc19f69465"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AdjustObjectDistance"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8690dca5-ffd3-47b4-b7bf-794c8e06486b"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RotateObject"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e076b34f-b91b-4ef0-89dc-ece5f83db88c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RotateObjectModeToggle"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -282,6 +373,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_Sprint = m_FPSPlayerActions.FindAction("Sprint", throwIfNotFound: true);
         m_FPSPlayerActions_Crouch = m_FPSPlayerActions.FindAction("Crouch", throwIfNotFound: true);
         m_FPSPlayerActions_ChangeSize = m_FPSPlayerActions.FindAction("ChangeSize", throwIfNotFound: true);
+        m_FPSPlayerActions_SwitchMode = m_FPSPlayerActions.FindAction("SwitchMode", throwIfNotFound: true);
+        m_FPSPlayerActions_AdjustObjectDistance = m_FPSPlayerActions.FindAction("AdjustObjectDistance", throwIfNotFound: true);
+        m_FPSPlayerActions_RotateObject = m_FPSPlayerActions.FindAction("RotateObject", throwIfNotFound: true);
+        m_FPSPlayerActions_RotateObjectModeToggle = m_FPSPlayerActions.FindAction("RotateObjectModeToggle", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -350,6 +445,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_Sprint;
     private readonly InputAction m_FPSPlayerActions_Crouch;
     private readonly InputAction m_FPSPlayerActions_ChangeSize;
+    private readonly InputAction m_FPSPlayerActions_SwitchMode;
+    private readonly InputAction m_FPSPlayerActions_AdjustObjectDistance;
+    private readonly InputAction m_FPSPlayerActions_RotateObject;
+    private readonly InputAction m_FPSPlayerActions_RotateObjectModeToggle;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -361,6 +460,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Sprint => m_Wrapper.m_FPSPlayerActions_Sprint;
         public InputAction @Crouch => m_Wrapper.m_FPSPlayerActions_Crouch;
         public InputAction @ChangeSize => m_Wrapper.m_FPSPlayerActions_ChangeSize;
+        public InputAction @SwitchMode => m_Wrapper.m_FPSPlayerActions_SwitchMode;
+        public InputAction @AdjustObjectDistance => m_Wrapper.m_FPSPlayerActions_AdjustObjectDistance;
+        public InputAction @RotateObject => m_Wrapper.m_FPSPlayerActions_RotateObject;
+        public InputAction @RotateObjectModeToggle => m_Wrapper.m_FPSPlayerActions_RotateObjectModeToggle;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -391,6 +494,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @ChangeSize.started += instance.OnChangeSize;
             @ChangeSize.performed += instance.OnChangeSize;
             @ChangeSize.canceled += instance.OnChangeSize;
+            @SwitchMode.started += instance.OnSwitchMode;
+            @SwitchMode.performed += instance.OnSwitchMode;
+            @SwitchMode.canceled += instance.OnSwitchMode;
+            @AdjustObjectDistance.started += instance.OnAdjustObjectDistance;
+            @AdjustObjectDistance.performed += instance.OnAdjustObjectDistance;
+            @AdjustObjectDistance.canceled += instance.OnAdjustObjectDistance;
+            @RotateObject.started += instance.OnRotateObject;
+            @RotateObject.performed += instance.OnRotateObject;
+            @RotateObject.canceled += instance.OnRotateObject;
+            @RotateObjectModeToggle.started += instance.OnRotateObjectModeToggle;
+            @RotateObjectModeToggle.performed += instance.OnRotateObjectModeToggle;
+            @RotateObjectModeToggle.canceled += instance.OnRotateObjectModeToggle;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -416,6 +531,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @ChangeSize.started -= instance.OnChangeSize;
             @ChangeSize.performed -= instance.OnChangeSize;
             @ChangeSize.canceled -= instance.OnChangeSize;
+            @SwitchMode.started -= instance.OnSwitchMode;
+            @SwitchMode.performed -= instance.OnSwitchMode;
+            @SwitchMode.canceled -= instance.OnSwitchMode;
+            @AdjustObjectDistance.started -= instance.OnAdjustObjectDistance;
+            @AdjustObjectDistance.performed -= instance.OnAdjustObjectDistance;
+            @AdjustObjectDistance.canceled -= instance.OnAdjustObjectDistance;
+            @RotateObject.started -= instance.OnRotateObject;
+            @RotateObject.performed -= instance.OnRotateObject;
+            @RotateObject.canceled -= instance.OnRotateObject;
+            @RotateObjectModeToggle.started -= instance.OnRotateObjectModeToggle;
+            @RotateObjectModeToggle.performed -= instance.OnRotateObjectModeToggle;
+            @RotateObjectModeToggle.canceled -= instance.OnRotateObjectModeToggle;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -442,5 +569,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnSprint(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
         void OnChangeSize(InputAction.CallbackContext context);
+        void OnSwitchMode(InputAction.CallbackContext context);
+        void OnAdjustObjectDistance(InputAction.CallbackContext context);
+        void OnRotateObject(InputAction.CallbackContext context);
+        void OnRotateObjectModeToggle(InputAction.CallbackContext context);
     }
 }

@@ -399,6 +399,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 424120228}
+  - component: {fileID: 424120229}
   m_Layer: 6
   m_Name: Weapon
   m_TagString: Untagged
@@ -424,6 +425,21 @@ Transform:
   - {fileID: 663483030}
   m_Father: {fileID: 1969435099}
   m_LocalEulerAnglesHint: {x: -3, y: -3, z: 0}
+--- !u!114 &424120229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424120227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80b1bccea4aca2a46b6599372f10cb90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveObjectSpeed: 45
+  rotateSpeed: 90
+  maxModifiedSurfaces: 3
 --- !u!1 &482158745
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,8 +525,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 663483030}
+  - component: {fileID: 663483031}
   m_Layer: 6
-  m_Name: Objectpool_
+  m_Name: ObjectPool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -531,6 +548,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 424120228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &663483031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663483029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed4becc2e0cd6d84d87a601534f9add2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectPrefab: {fileID: 8755015954181910977, guid: 061d181db2a376442a5e7c0d81da381e, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -762,9 +792,11 @@ MonoBehaviour:
   moveSpeed: 5
   sprintMultiplier: 1.5
   rotationSpeed: 5
+  toggleCrouch: 1
   crouchHeight: 1
   standHeight: 2
   crouchSpeed: 0.1
+  crouchJumpMultiplier: 1.2
   playerCamera: {fileID: 1969435103}
   headBobFrequency: 1.5
   headBobAmplitude: 6.3
@@ -782,9 +814,11 @@ GameObject:
   - component: {fileID: 1383624392}
   - component: {fileID: 1383624391}
   - component: {fileID: 1383624390}
+  - component: {fileID: 1383624395}
+  - component: {fileID: 1383624394}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Moveable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -869,12 +903,51 @@ Transform:
   m_GameObject: {fileID: 1383624389}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 7.5}
+  m_LocalPosition: {x: 0, y: 1.75, z: 7.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1383624394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383624389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b29acd5bf95dcdf48ba2057507b7f000, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!54 &1383624395
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383624389}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1393996734
 GameObject:
   m_ObjectHideFlags: 3
@@ -1325,7 +1398,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e986f1b9890c9394d9b9c190dfd77291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lookSpeed: 3
+  mouseSensitivity: 100
+  verticalRotationLimit: 80
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -13,23 +13,39 @@ public class AdvancedArmCannon : MonoBehaviour
     private ModifySurfacesHandler modifySurfacesHandler;
     private BlasterHandler blasterHandler;
 
-    // Add these public properties
-    public float moveObjectSpeed = 5f;
-    public float rotateSpeed = 90f; // Degrees per second
+    // Configurable parameters
+    public float moveObjectSpeed = 5f; // Speed at which objects are moved
+    public float rotateSpeed = 90f; // Degrees per second for rotation
+    public int maxModifiedSurfaces = 3; // Max number of surfaces that can be modified at once
 
     void Awake()
     {
         playerControls = new PlayerControls();
-        playerControls.ArmCannon.SwitchMode.performed += _ => SwitchMode();
-        playerControls.ArmCannon.Fire.performed += _ => Fire();
-        playerControls.ArmCannon.Fire.canceled += _ => ReleaseFire();
-        playerControls.ArmCannon.MoveObject.performed += ctx => moveObjectsHandler.MoveObject(ctx.ReadValue<Vector2>());
-        playerControls.ArmCannon.RotateObject.performed += ctx => moveObjectsHandler.RotateObject(ctx.ReadValue<float>());
+        playerControls.FPSPlayerActions.SwitchMode.performed += _ => SwitchMode();
+        playerControls.FPSPlayerActions.Fire.performed += _ => Fire();
+        playerControls.FPSPlayerActions.Fire.canceled += _ => ReleaseFire();
+
+        // Get the CinemachineLook component
+        CinemachineLook cinemachineLook = GetComponent<CinemachineLook>();
 
         // Initialize mode handlers
-        moveObjectsHandler = new MoveObjectsHandler(this);
-        modifySurfacesHandler = new ModifySurfacesHandler(this);
+        moveObjectsHandler = new MoveObjectsHandler(this, moveObjectSpeed, rotateSpeed, cinemachineLook);
+        playerControls.FPSPlayerActions.RotateObjectModeToggle.performed += _ => moveObjectsHandler.ToggleObjectRotationMode();
+        modifySurfacesHandler = new ModifySurfacesHandler(this, maxModifiedSurfaces);
         blasterHandler = new BlasterHandler(this);
+
+        // Input bindings for MoveObject and RotateObject
+        playerControls.FPSPlayerActions.AdjustObjectDistance.performed += ctx => moveObjectsHandler.MoveObject(ctx.ReadValue<Vector2>());
+
+        // Handling rotation - checking if right mouse button is held and then using mouse delta for rotation
+        playerControls.FPSPlayerActions.RotateObject.performed += ctx =>
+        {
+            if (Mouse.current.rightButton.isPressed)
+            {
+                Vector2 rotationDelta = ctx.ReadValue<Vector2>();
+                moveObjectsHandler.RotateObject(rotationDelta);
+            }
+        };
     }
 
     void OnEnable()
@@ -45,7 +61,7 @@ public class AdvancedArmCannon : MonoBehaviour
     private void SwitchMode()
     {
         currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
-        // Additional logic for mode switching, like updating UI
+        // Add logic to update UI or visual indicators for the current mode
     }
 
     private void Fire()
@@ -74,7 +90,6 @@ public class AdvancedArmCannon : MonoBehaviour
 
     void Update()
     {
-        // Update logic specific to each mode
         switch (currentMode)
         {
             case WeaponMode.MoveObjects:
