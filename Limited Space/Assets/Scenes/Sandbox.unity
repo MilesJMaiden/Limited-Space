@@ -437,9 +437,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80b1bccea4aca2a46b6599372f10cb90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveObjectSpeed: 45
+  moveObjectSpeed: 0.5
   rotateSpeed: 90
   maxModifiedSurfaces: 3
+  cinemachineLook: {fileID: 2122897689}
 --- !u!1 &482158745
 GameObject:
   m_ObjectHideFlags: 0
@@ -1325,7 +1326,7 @@ GameObject:
   - component: {fileID: 2122897687}
   - component: {fileID: 2122897689}
   m_Layer: 0
-  m_Name: FPS Virtual Camera
+  m_Name: FPSVirtualCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

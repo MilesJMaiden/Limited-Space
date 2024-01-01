@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class MoveObjectsHandler
 {
     private CinemachineLook cinemachineLook;
+    private AdvancedPlayerMovement playerMovement;
 
     private AdvancedArmCannon armCannon;
     private GameObject heldObject;
@@ -13,13 +14,15 @@ public class MoveObjectsHandler
     private float rotateSpeed;
     private bool isRotatingObject = false;
 
+    private Quaternion savedPlayerRotation;
 
-    public MoveObjectsHandler(AdvancedArmCannon armCannon, float moveSpeed, float rotateSpeed, CinemachineLook cinemachineLook)
+    public MoveObjectsHandler(AdvancedArmCannon armCannon, float moveSpeed, float rotateSpeed, CinemachineLook cinemachineLook, AdvancedPlayerMovement playerMovement)
     {
         this.armCannon = armCannon;
         this.moveSpeed = moveSpeed;
         this.rotateSpeed = rotateSpeed;
         this.cinemachineLook = cinemachineLook;
+        this.playerMovement = playerMovement;
     }
 
     public void TryGrabObject()
@@ -96,19 +99,24 @@ public class MoveObjectsHandler
         }
     }
 
-    public void ToggleObjectRotationMode()
+    public void EnterObjectRotationMode()
     {
-        isRotatingObject = !isRotatingObject;
-        cinemachineLook.SetCameraMovementEnabled(!isRotatingObject);
+        // Save current player rotation and lock camera and player rotation
+        savedPlayerRotation = playerMovement.transform.rotation;
+        cinemachineLook.SetCameraMovementEnabled(false);
+        playerMovement.LockRotation(true);
 
-        if (isRotatingObject)
-        {
-            // Maybe change the cursor or show some UI indication that we are in object rotation mode
-        }
-        else
-        {
-            // Revert any UI changes or cursor changes
-        }
+        isRotatingObject = true;
+    }
+
+    public void ExitObjectRotationMode()
+    {
+        // Restore player rotation and unlock camera and player rotation
+        playerMovement.transform.rotation = savedPlayerRotation;
+        cinemachineLook.SetCameraMovementEnabled(true);
+        playerMovement.LockRotation(false);
+
+        isRotatingObject = false;
     }
 
     public void Update()
@@ -118,14 +126,20 @@ public class MoveObjectsHandler
             Vector3 newPosition = armCannon.transform.position + armCannon.transform.forward * heldObjectDistance;
             heldObject.transform.position = newPosition;
 
-            // Check for right mouse button to enable/disable rotation
-            if (Mouse.current.rightButton.wasPressedThisFrame)
+            // Toggle object rotation mode based on right mouse button
+            if (Mouse.current.rightButton.isPressed && !isRotatingObject)
             {
-                isRotatingObject = true;
+                EnterObjectRotationMode();
             }
-            else if (Mouse.current.rightButton.wasReleasedThisFrame)
+            else if (Mouse.current.rightButton.wasReleasedThisFrame && isRotatingObject)
             {
-                isRotatingObject = false;
+                ExitObjectRotationMode();
+            }
+
+            if (isRotatingObject)
+            {
+                Vector2 rotationDelta = Mouse.current.delta.ReadValue();
+                RotateObject(rotationDelta);
             }
         }
     }

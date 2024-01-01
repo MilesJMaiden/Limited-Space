@@ -18,6 +18,10 @@ public class AdvancedArmCannon : MonoBehaviour
     public float rotateSpeed = 90f; // Degrees per second for rotation
     public int maxModifiedSurfaces = 3; // Max number of surfaces that can be modified at once
 
+    public CinemachineLook cinemachineLook; // Add this line
+
+    private AdvancedPlayerMovement playerMovement;
+
     void Awake()
     {
         playerControls = new PlayerControls();
@@ -25,19 +29,35 @@ public class AdvancedArmCannon : MonoBehaviour
         playerControls.FPSPlayerActions.Fire.performed += _ => Fire();
         playerControls.FPSPlayerActions.Fire.canceled += _ => ReleaseFire();
 
-        // Get the CinemachineLook component
-        CinemachineLook cinemachineLook = GetComponent<CinemachineLook>();
+        GameObject fpsVirtualCamera = GameObject.Find("FPSVirtualCamera");
+        if (fpsVirtualCamera == null)
+        {
+            Debug.LogError("FPS Virtual Camera not found in scene.");
+            return;
+        }
 
-        // Initialize mode handlers
-        moveObjectsHandler = new MoveObjectsHandler(this, moveObjectSpeed, rotateSpeed, cinemachineLook);
-        playerControls.FPSPlayerActions.RotateObjectModeToggle.performed += _ => moveObjectsHandler.ToggleObjectRotationMode();
+        CinemachineLook cinemachineLook = fpsVirtualCamera.GetComponent<CinemachineLook>();
+        if (cinemachineLook == null)
+        {
+            Debug.LogError("CinemachineLook component not found on FPS Virtual Camera.");
+            return;
+        }
+
+        // Find the AdvancedPlayerMovement component in the parent GameObject
+        playerMovement = GetComponentInParent<AdvancedPlayerMovement>();
+        if (playerMovement == null)
+        {
+            Debug.LogError("AdvancedPlayerMovement component not found in parent GameObject.");
+            return;
+        }
+
+        // Initialize mode handlers with the playerMovement reference
+        moveObjectsHandler = new MoveObjectsHandler(this, moveObjectSpeed, rotateSpeed, cinemachineLook, playerMovement);
         modifySurfacesHandler = new ModifySurfacesHandler(this, maxModifiedSurfaces);
         blasterHandler = new BlasterHandler(this);
 
         // Input bindings for MoveObject and RotateObject
         playerControls.FPSPlayerActions.AdjustObjectDistance.performed += ctx => moveObjectsHandler.MoveObject(ctx.ReadValue<Vector2>());
-
-        // Handling rotation - checking if right mouse button is held and then using mouse delta for rotation
         playerControls.FPSPlayerActions.RotateObject.performed += ctx =>
         {
             if (Mouse.current.rightButton.isPressed)
@@ -90,16 +110,26 @@ public class AdvancedArmCannon : MonoBehaviour
 
     void Update()
     {
+        // Update logic specific to each mode
         switch (currentMode)
         {
             case WeaponMode.MoveObjects:
-                moveObjectsHandler.Update();
+                if (moveObjectsHandler != null)
+                {
+                    moveObjectsHandler.Update();
+                }
                 break;
             case WeaponMode.ModifySurfaces:
-                modifySurfacesHandler.Update();
+                if (modifySurfacesHandler != null)
+                {
+                    modifySurfacesHandler.Update();
+                }
                 break;
             case WeaponMode.Blaster:
-                blasterHandler.Update();
+                if (blasterHandler != null)
+                {
+                    blasterHandler.Update();
+                }
                 break;
         }
     }

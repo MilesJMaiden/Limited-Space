@@ -16,6 +16,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [Header("Camera Settings")]
     [SerializeField] private CinemachineVirtualCamera cinemachineCamera; // Reference to the Cinemachine Virtual Camera
     private Vector3 originalFollowOffset;
+    private bool isRotationLocked = false;
 
     private Vector3 originalScale; // Original scale of the player
     private float originalColliderHeight; // Original collider height
@@ -120,7 +121,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
         isSmall = false;
 
         // Find and assign the Cinemachine Virtual Camera
-        cinemachineCamera = GameObject.Find("FPS Virtual Camera").GetComponent<CinemachineVirtualCamera>();
+        cinemachineCamera = GameObject.Find("FPSVirtualCamera").GetComponent<CinemachineVirtualCamera>();
         if (cinemachineCamera != null)
         {
             var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
@@ -205,11 +206,19 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
+    public void LockRotation(bool lockRotation)
+    {
+        isRotationLocked = lockRotation;
+    }
+
     private void AlignPlayerWithCameraDirection()
     {
-        Vector3 cameraForward = Camera.main.transform.forward;
-        cameraForward.y = 0;
-        transform.forward = Vector3.Lerp(transform.forward, cameraForward, Time.deltaTime * rotationSpeed);
+        if (!isRotationLocked)
+        {
+            Vector3 cameraForward = Camera.main.transform.forward;
+            cameraForward.y = 0;
+            transform.forward = Vector3.Lerp(transform.forward, cameraForward, Time.deltaTime * rotationSpeed);
+        }
     }
 
     private void Move()
