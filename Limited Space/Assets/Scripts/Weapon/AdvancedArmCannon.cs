@@ -5,7 +5,8 @@ public class AdvancedArmCannon : MonoBehaviour
 {
     public CinemachineLook cinemachineLook;
     private AdvancedPlayerMovement playerMovement;
-    public HUDManager hudManager;
+    private HUDManager hudManager;
+
 
     public enum WeaponMode { MoveObjects, ModifySurfaces, Blaster }
     private WeaponMode currentMode;
@@ -72,6 +73,13 @@ public class AdvancedArmCannon : MonoBehaviour
                 moveObjectsHandler.RotateObject(rotationDelta);
             }
         };
+
+        // Assign HUDManager reference
+        hudManager = FindObjectOfType<HUDManager>();
+        if (hudManager == null)
+        {
+            Debug.LogError("HUDManager not found in the scene.");
+        }
     }
 
     void OnEnable()
@@ -84,18 +92,28 @@ public class AdvancedArmCannon : MonoBehaviour
         playerControls.Disable();
     }
 
-    private void SwitchMode()
+    void SwitchMode()
     {
+        if (!AnyModesUnlocked())
+        {
+            // If no modes are unlocked, don't switch and return
+            return;
+        }
+
+        WeaponMode originalMode = currentMode;
         do
         {
             currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
-        } while (!IsModeUnlocked(currentMode));
+        } while (!IsModeUnlocked(currentMode) && currentMode != originalMode); // Check if we have looped back to the original mode
 
         // Update the HUD
         if (hudManager != null)
-            hudManager.UpdateWeaponModeIndicator(currentMode);
+            hudManager.UpdateWeaponModeIndicator(currentMode, moveObjectsUnlocked, modifySurfacesUnlocked, blasterUnlocked);
+    }
 
-        // Additional logic for mode switching
+    bool AnyModesUnlocked()
+    {
+        return moveObjectsUnlocked || modifySurfacesUnlocked || blasterUnlocked;
     }
 
     private bool IsModeUnlocked(WeaponMode mode)
@@ -113,25 +131,35 @@ public class AdvancedArmCannon : MonoBehaviour
         }
     }
 
-    public void UnlockWeaponMode(WeaponMode mode)
+    public void UnlockWeaponMode(AdvancedArmCannon.WeaponMode mode)
     {
+        bool wasAnyModeUnlocked = AnyModesUnlocked();
+
         switch (mode)
         {
-            case WeaponMode.MoveObjects:
+            case AdvancedArmCannon.WeaponMode.MoveObjects:
                 moveObjectsUnlocked = true;
                 break;
-            case WeaponMode.ModifySurfaces:
+            case AdvancedArmCannon.WeaponMode.ModifySurfaces:
                 modifySurfacesUnlocked = true;
                 break;
-            case WeaponMode.Blaster:
+            case AdvancedArmCannon.WeaponMode.Blaster:
                 blasterUnlocked = true;
                 break;
         }
 
-        // Additional logic when a new mode is unlocked
+        // If no mode was unlocked before, set the newly unlocked mode as the current mode
+        if (!wasAnyModeUnlocked)
+        {
+            currentMode = mode;
+        }
+
         // Update the HUD
         if (hudManager != null)
-            hudManager.UpdateWeaponModeIndicator(currentMode);
+        {
+            hudManager.EnableWeaponModeIndicator(mode);
+            hudManager.UpdateWeaponModeIndicator(currentMode, moveObjectsUnlocked, modifySurfacesUnlocked, blasterUnlocked);
+        }
     }
 
     private void Fire()

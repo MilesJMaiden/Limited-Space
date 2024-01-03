@@ -100,6 +100,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private bool isSmall = false;
     private bool isChangingSize = false; // Flag to indicate if currently changing size
 
+    public bool isClimbing = false;
+    public float climbingSpeed = 3.0f;
+
     private void Awake()
     {
         // Initialize controls and components
@@ -151,18 +154,23 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (isClimbing)
+        {
+            HandleClimbing();
+        }
+
         if (!isChangingSize)
         {
             HandleCrouchInput();
             AlignPlayerWithCameraDirection();
         }
 
-        // New: Check if the player has landed to reset jump state
         if (isGrounded && isJumping)
         {
             isJumping = false;
             ResetJumpState();
         }
+
     }
 
     private void FixedUpdate()
@@ -429,34 +437,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-    private bool isClimbing = false;
-
-    public void EnableClimbing(bool enable)
-    {
-        isClimbing = enable;
-        if (isClimbing)
-        {
-            // Implement logic to enable climbing
-            // For example, modify movement to allow vertical movement on walls
-        }
-        else
-        {
-            // Implement logic to disable climbing
-        }
-    }
-
-    // In the Update method or FixedUpdate method
-    private void UpdateClimbing()
-    {
-        if (isClimbing)
-        {
-            // Implement climbing behavior here
-            // You can use input from PlayerControls to move the player along the wall
-        }
-    }
-
-
-
     private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
     {
         // Adjust jump force relative to the size
@@ -467,6 +447,29 @@ public class AdvancedPlayerMovement : MonoBehaviour
         moveSpeed = Mathf.Lerp(moveSpeed, originalMoveSpeed * scaleFactor, lerpFactor);
 
         // Add other properties if needed
+    }
+
+    public void EnableClimbing(bool enable)
+    {
+        isClimbing = enable;
+        rb.useGravity = !enable;
+    }
+
+    private void HandleClimbing()
+    {
+        // Use the same input as walking for climbing
+        float verticalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().y;
+        float horizontalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().x;
+
+        Vector3 climbingMovement = new Vector3(horizontalInput, verticalInput, 0) * climbingSpeed;
+        transform.Translate(climbingMovement * Time.deltaTime);
+
+        // Automatically stop climbing if the player becomes grounded
+        if (isGrounded)
+        {
+            isClimbing = false;
+            rb.useGravity = true;
+        }
     }
 
     private void OnCollisionEnter(Collision collision)

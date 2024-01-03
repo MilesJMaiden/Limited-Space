@@ -62,7 +62,7 @@ public class ModifySurfacesHandler
     private bool IsFloor(GameObject surface)
     {
         // Implement logic to determine if the surface is a floor
-        return surface.CompareTag("Floor");
+        return surface.CompareTag("Ground");
     }
 
     private void MakeClimbable(GameObject surface)
@@ -78,6 +78,30 @@ public class ModifySurfacesHandler
         if (surface.GetComponent<TrampolineSurface>() == null)
         {
             surface.AddComponent<TrampolineSurface>();
+        }
+    }
+
+    private void ApplySurfaceProperties(GameObject surface)
+    {
+        if (IsWall(surface))
+        {
+            // Apply climbable properties
+            ClimbableSurface climbable = surface.GetComponent<ClimbableSurface>();
+            if (climbable == null)
+            {
+                climbable = surface.AddComponent<ClimbableSurface>();
+            }
+            // Set properties like climbing speed or stamina usage
+        }
+        else if (IsFloor(surface))
+        {
+            // Apply trampoline properties
+            TrampolineSurface trampoline = surface.GetComponent<TrampolineSurface>();
+            if (trampoline == null)
+            {
+                trampoline = surface.AddComponent<TrampolineSurface>();
+            }
+            // Set properties like bounce strength
         }
     }
 

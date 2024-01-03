@@ -143,6 +143,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Climb"",
+                    ""type"": ""Button"",
+                    ""id"": ""76f06445-c7da-449c-a78f-b111ec8ca47b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -398,6 +407,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5dcd4117-e7a5-4cb1-ac77-7d3596243b50"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Climb"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -419,6 +439,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_RotateObjectModeToggle = m_FPSPlayerActions.FindAction("RotateObjectModeToggle", throwIfNotFound: true);
         m_FPSPlayerActions_Pause = m_FPSPlayerActions.FindAction("Pause", throwIfNotFound: true);
         m_FPSPlayerActions_Interact = m_FPSPlayerActions.FindAction("Interact", throwIfNotFound: true);
+        m_FPSPlayerActions_Climb = m_FPSPlayerActions.FindAction("Climb", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -493,6 +514,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_RotateObjectModeToggle;
     private readonly InputAction m_FPSPlayerActions_Pause;
     private readonly InputAction m_FPSPlayerActions_Interact;
+    private readonly InputAction m_FPSPlayerActions_Climb;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -510,6 +532,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @RotateObjectModeToggle => m_Wrapper.m_FPSPlayerActions_RotateObjectModeToggle;
         public InputAction @Pause => m_Wrapper.m_FPSPlayerActions_Pause;
         public InputAction @Interact => m_Wrapper.m_FPSPlayerActions_Interact;
+        public InputAction @Climb => m_Wrapper.m_FPSPlayerActions_Climb;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -558,6 +581,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
+            @Climb.started += instance.OnClimb;
+            @Climb.performed += instance.OnClimb;
+            @Climb.canceled += instance.OnClimb;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -601,6 +627,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
+            @Climb.started -= instance.OnClimb;
+            @Climb.performed -= instance.OnClimb;
+            @Climb.canceled -= instance.OnClimb;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -633,5 +662,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnRotateObjectModeToggle(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
+        void OnClimb(InputAction.CallbackContext context);
     }
 }
