@@ -67,7 +67,22 @@ public class WeaponModeUnlockable : MonoBehaviour
             if (armCannon != null)
                 armCannon.UnlockWeaponMode(modeToUnlock);
 
-            Destroy(gameObject); // Destroy the power-up
+            // Unregister the callback immediately after interaction
+            if (playerControls != null)
+            {
+                playerControls.FPSPlayerActions.Interact.performed -= OnInteractPerformed;
+            }
+
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Unregister the callback when the object is being destroyed
+        if (playerControls != null)
+        {
+            playerControls.FPSPlayerActions.Interact.performed -= OnInteractPerformed;
         }
     }
 }

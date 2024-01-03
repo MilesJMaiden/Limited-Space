@@ -5,6 +5,7 @@ public class AdvancedArmCannon : MonoBehaviour
 {
     public CinemachineLook cinemachineLook;
     private AdvancedPlayerMovement playerMovement;
+    public HUDManager hudManager;
 
     public enum WeaponMode { MoveObjects, ModifySurfaces, Blaster }
     private WeaponMode currentMode;
@@ -25,7 +26,6 @@ public class AdvancedArmCannon : MonoBehaviour
     public float moveObjectSpeed = 5f; // Speed at which objects are moved
     public float rotateSpeed = 90f; // Degrees per second for rotation
     public int maxModifiedSurfaces = 3; // Max number of surfaces that can be modified at once
-
 
 
     void Awake()
@@ -91,6 +91,10 @@ public class AdvancedArmCannon : MonoBehaviour
             currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
         } while (!IsModeUnlocked(currentMode));
 
+        // Update the HUD
+        if (hudManager != null)
+            hudManager.UpdateWeaponModeIndicator(currentMode);
+
         // Additional logic for mode switching
     }
 
@@ -125,6 +129,9 @@ public class AdvancedArmCannon : MonoBehaviour
         }
 
         // Additional logic when a new mode is unlocked
+        // Update the HUD
+        if (hudManager != null)
+            hudManager.UpdateWeaponModeIndicator(currentMode);
     }
 
     private void Fire()
