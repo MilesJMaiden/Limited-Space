@@ -100,7 +100,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private bool isSmall = false;
     private bool isChangingSize = false; // Flag to indicate if currently changing size
 
-
     private void Awake()
     {
         // Initialize controls and components
@@ -188,6 +187,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
                 wasInAir = true;
             }
         }
+    }
+
+    public PlayerControls PlayerControls
+    {
+        get { return playerControls; }
     }
 
     private void HandleCrouchInput()
@@ -415,6 +419,43 @@ public class AdvancedPlayerMovement : MonoBehaviour
             StartCoroutine(AdjustCrouchHeight(newCrouchHeight));
         }
     }
+
+    public void ApplyBounce(float bounceMultiplier)
+    {
+        // Check if the player is on the ground before applying the bounce
+        if (isGrounded)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce * bounceMultiplier, rb.velocity.z);
+        }
+    }
+
+    private bool isClimbing = false;
+
+    public void EnableClimbing(bool enable)
+    {
+        isClimbing = enable;
+        if (isClimbing)
+        {
+            // Implement logic to enable climbing
+            // For example, modify movement to allow vertical movement on walls
+        }
+        else
+        {
+            // Implement logic to disable climbing
+        }
+    }
+
+    // In the Update method or FixedUpdate method
+    private void UpdateClimbing()
+    {
+        if (isClimbing)
+        {
+            // Implement climbing behavior here
+            // You can use input from PlayerControls to move the player along the wall
+        }
+    }
+
+
 
     private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
     {

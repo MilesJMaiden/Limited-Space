@@ -134,6 +134,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""4f532224-4ca3-43fa-9236-f1e964323ed2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -378,6 +387,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""88a47be5-df87-4b39-acb0-f268b3293cfe"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -398,6 +418,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_RotateObject = m_FPSPlayerActions.FindAction("RotateObject", throwIfNotFound: true);
         m_FPSPlayerActions_RotateObjectModeToggle = m_FPSPlayerActions.FindAction("RotateObjectModeToggle", throwIfNotFound: true);
         m_FPSPlayerActions_Pause = m_FPSPlayerActions.FindAction("Pause", throwIfNotFound: true);
+        m_FPSPlayerActions_Interact = m_FPSPlayerActions.FindAction("Interact", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -471,6 +492,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_RotateObject;
     private readonly InputAction m_FPSPlayerActions_RotateObjectModeToggle;
     private readonly InputAction m_FPSPlayerActions_Pause;
+    private readonly InputAction m_FPSPlayerActions_Interact;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -487,6 +509,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @RotateObject => m_Wrapper.m_FPSPlayerActions_RotateObject;
         public InputAction @RotateObjectModeToggle => m_Wrapper.m_FPSPlayerActions_RotateObjectModeToggle;
         public InputAction @Pause => m_Wrapper.m_FPSPlayerActions_Pause;
+        public InputAction @Interact => m_Wrapper.m_FPSPlayerActions_Interact;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -532,6 +555,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
+            @Interact.started += instance.OnInteract;
+            @Interact.performed += instance.OnInteract;
+            @Interact.canceled += instance.OnInteract;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -572,6 +598,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
+            @Interact.started -= instance.OnInteract;
+            @Interact.performed -= instance.OnInteract;
+            @Interact.canceled -= instance.OnInteract;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -603,5 +632,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnRotateObject(InputAction.CallbackContext context);
         void OnRotateObjectModeToggle(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
 }
