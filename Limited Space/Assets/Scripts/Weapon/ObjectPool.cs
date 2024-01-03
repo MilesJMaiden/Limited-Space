@@ -16,7 +16,7 @@ public class ObjectPool : MonoBehaviour
         int poolSize = 10; // Adjust the size as needed
         for (int i = 0; i < poolSize; i++)
         {
-            GameObject newObj = Instantiate(objectPrefab);
+            GameObject newObj = Instantiate(objectPrefab, transform);
             newObj.SetActive(false);
             objects.Enqueue(newObj);
         }
@@ -27,12 +27,14 @@ public class ObjectPool : MonoBehaviour
         if (objects.Count == 0)
         {
             // Optionally create a new object if the pool is empty
-            return Instantiate(objectPrefab, position, rotation);
+            GameObject newObj = Instantiate(objectPrefab, position, rotation, transform);
+            return newObj;
         }
 
         GameObject obj = objects.Dequeue();
         obj.transform.position = position;
         obj.transform.rotation = rotation;
+        obj.transform.SetParent(transform); // Set as child of the pool object
         obj.SetActive(true);
         return obj;
     }
@@ -40,6 +42,7 @@ public class ObjectPool : MonoBehaviour
     public void ReturnObjectToPool(GameObject obj)
     {
         obj.SetActive(false);
+        obj.transform.SetParent(transform); // Reassign the parent
         objects.Enqueue(obj);
     }
 }

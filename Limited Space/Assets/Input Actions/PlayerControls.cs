@@ -125,6 +125,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Pause"",
+                    ""type"": ""Button"",
+                    ""id"": ""039e3096-cb0a-43cc-9799-623b8233329a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -358,6 +367,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""RotateObjectModeToggle"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""72d1a7ef-7554-418f-b9db-4eb34580eb81"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -377,6 +397,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_FPSPlayerActions_AdjustObjectDistance = m_FPSPlayerActions.FindAction("AdjustObjectDistance", throwIfNotFound: true);
         m_FPSPlayerActions_RotateObject = m_FPSPlayerActions.FindAction("RotateObject", throwIfNotFound: true);
         m_FPSPlayerActions_RotateObjectModeToggle = m_FPSPlayerActions.FindAction("RotateObjectModeToggle", throwIfNotFound: true);
+        m_FPSPlayerActions_Pause = m_FPSPlayerActions.FindAction("Pause", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -449,6 +470,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_FPSPlayerActions_AdjustObjectDistance;
     private readonly InputAction m_FPSPlayerActions_RotateObject;
     private readonly InputAction m_FPSPlayerActions_RotateObjectModeToggle;
+    private readonly InputAction m_FPSPlayerActions_Pause;
     public struct FPSPlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
@@ -464,6 +486,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @AdjustObjectDistance => m_Wrapper.m_FPSPlayerActions_AdjustObjectDistance;
         public InputAction @RotateObject => m_Wrapper.m_FPSPlayerActions_RotateObject;
         public InputAction @RotateObjectModeToggle => m_Wrapper.m_FPSPlayerActions_RotateObjectModeToggle;
+        public InputAction @Pause => m_Wrapper.m_FPSPlayerActions_Pause;
         public InputActionMap Get() { return m_Wrapper.m_FPSPlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -506,6 +529,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @RotateObjectModeToggle.started += instance.OnRotateObjectModeToggle;
             @RotateObjectModeToggle.performed += instance.OnRotateObjectModeToggle;
             @RotateObjectModeToggle.canceled += instance.OnRotateObjectModeToggle;
+            @Pause.started += instance.OnPause;
+            @Pause.performed += instance.OnPause;
+            @Pause.canceled += instance.OnPause;
         }
 
         private void UnregisterCallbacks(IFPSPlayerActionsActions instance)
@@ -543,6 +569,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @RotateObjectModeToggle.started -= instance.OnRotateObjectModeToggle;
             @RotateObjectModeToggle.performed -= instance.OnRotateObjectModeToggle;
             @RotateObjectModeToggle.canceled -= instance.OnRotateObjectModeToggle;
+            @Pause.started -= instance.OnPause;
+            @Pause.performed -= instance.OnPause;
+            @Pause.canceled -= instance.OnPause;
         }
 
         public void RemoveCallbacks(IFPSPlayerActionsActions instance)
@@ -573,5 +602,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnAdjustObjectDistance(InputAction.CallbackContext context);
         void OnRotateObject(InputAction.CallbackContext context);
         void OnRotateObjectModeToggle(InputAction.CallbackContext context);
+        void OnPause(InputAction.CallbackContext context);
     }
 }

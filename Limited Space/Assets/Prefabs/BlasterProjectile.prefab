@@ -126,6 +126,7 @@ GameObject:
   - component: {fileID: 6041455947370195176}
   - component: {fileID: 3194774222218698632}
   - component: {fileID: 8774659324168146957}
+  - component: {fileID: -4264005624549821533}
   m_Layer: 0
   m_Name: BlasterProjectile
   m_TagString: BlasterProjectile
@@ -197,3 +198,17 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-4264005624549821533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8755015954181910977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e46c0dfe58ec104a982a8c1736fb888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  impactEffectPrefab: {fileID: 0}
+  impactSound: {fileID: 0}

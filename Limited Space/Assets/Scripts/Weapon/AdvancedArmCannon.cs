@@ -3,7 +3,10 @@ using UnityEngine.InputSystem;
 
 public class AdvancedArmCannon : MonoBehaviour
 {
-    private enum WeaponMode { MoveObjects, ModifySurfaces, Blaster }
+    public CinemachineLook cinemachineLook;
+    private AdvancedPlayerMovement playerMovement;
+
+    public enum WeaponMode { MoveObjects, ModifySurfaces, Blaster }
     private WeaponMode currentMode;
 
     private PlayerControls playerControls;
@@ -13,14 +16,17 @@ public class AdvancedArmCannon : MonoBehaviour
     private ModifySurfacesHandler modifySurfacesHandler;
     private BlasterHandler blasterHandler;
 
+    // Unlock flags for each weapon mode
+    public bool moveObjectsUnlocked = false;
+    public bool modifySurfacesUnlocked = false;
+    public bool blasterUnlocked = false;
+
     // Configurable parameters
     public float moveObjectSpeed = 5f; // Speed at which objects are moved
     public float rotateSpeed = 90f; // Degrees per second for rotation
     public int maxModifiedSurfaces = 3; // Max number of surfaces that can be modified at once
 
-    public CinemachineLook cinemachineLook; // Add this line
 
-    private AdvancedPlayerMovement playerMovement;
 
     void Awake()
     {
@@ -80,12 +86,52 @@ public class AdvancedArmCannon : MonoBehaviour
 
     private void SwitchMode()
     {
-        currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
-        // Add logic to update UI or visual indicators for the current mode
+        do
+        {
+            currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
+        } while (!IsModeUnlocked(currentMode));
+
+        // Additional logic for mode switching
+    }
+
+    private bool IsModeUnlocked(WeaponMode mode)
+    {
+        switch (mode)
+        {
+            case WeaponMode.MoveObjects:
+                return moveObjectsUnlocked;
+            case WeaponMode.ModifySurfaces:
+                return modifySurfacesUnlocked;
+            case WeaponMode.Blaster:
+                return blasterUnlocked;
+            default:
+                return false;
+        }
+    }
+
+    public void UnlockWeaponMode(WeaponMode mode)
+    {
+        switch (mode)
+        {
+            case WeaponMode.MoveObjects:
+                moveObjectsUnlocked = true;
+                break;
+            case WeaponMode.ModifySurfaces:
+                modifySurfacesUnlocked = true;
+                break;
+            case WeaponMode.Blaster:
+                blasterUnlocked = true;
+                break;
+        }
+
+        // Additional logic when a new mode is unlocked
     }
 
     private void Fire()
     {
+        if (!IsModeUnlocked(currentMode))
+            return;
+
         switch (currentMode)
         {
             case WeaponMode.MoveObjects:
