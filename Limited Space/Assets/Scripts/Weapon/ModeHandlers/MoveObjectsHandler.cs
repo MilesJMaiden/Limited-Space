@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,9 @@ public class MoveObjectsHandler
     private bool isRotatingObject = false;
 
     private Quaternion savedPlayerRotation;
+
+    private List<GameObject> releasedObjects = new List<GameObject>();
+    private int maxStoredObjects = 3;
 
     public MoveObjectsHandler(AdvancedArmCannon armCannon, float moveSpeed, float rotateSpeed, CinemachineLook cinemachineLook, AdvancedPlayerMovement playerMovement)
     {
@@ -68,11 +72,67 @@ public class MoveObjectsHandler
 
             if (heldObjectRigidbody != null)
             {
-                heldObjectRigidbody.useGravity = true;
+                ManageReleasedObjects(heldObject); // Manage the object when released
             }
 
             heldObject = null;
             heldObjectRigidbody = null;
+        }
+    }
+
+    private void ManageReleasedObjects(GameObject releasedObject)
+    {
+        if (!releasedObjects.Contains(releasedObject))
+        {
+            releasedObjects.Add(releasedObject);
+            DisablePhysics(releasedObject);
+        }
+
+        if (releasedObjects.Count > maxStoredObjects)
+        {
+            GameObject oldestObject = releasedObjects[0];
+            releasedObjects.RemoveAt(0);
+            EnablePhysics(oldestObject);
+            ResetObjectState(oldestObject);
+        }
+    }
+
+    private void ResetObjectState(GameObject obj)
+    {
+        // Re-enable gravity and remove all constraints from the object's Rigidbody
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.None;
+
+            // Reset velocity and angular velocity to stop any residual movement
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // Add any additional reset logic if needed, like resetting position or rotation
+        // For example: obj.transform.position = initialPosition;
+        //              obj.transform.rotation = initialRotation;
+    }
+
+    private void DisablePhysics(GameObject obj)
+    {
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.useGravity = false;
+            rb.constraints = RigidbodyConstraints.FreezeAll;
+        }
+    }
+
+    private void EnablePhysics(GameObject obj)
+    {
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.None;
         }
     }
 
