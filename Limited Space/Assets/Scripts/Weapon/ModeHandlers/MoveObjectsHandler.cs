@@ -19,6 +19,9 @@ public class MoveObjectsHandler
 
     private List<GameObject> releasedObjects = new List<GameObject>();
     private int maxStoredObjects = 3;
+    private Color queuedObjectColor = Color.blue; // Color for objects in the queue
+
+    private Dictionary<GameObject, Color> originalColors = new Dictionary<GameObject, Color>();
 
     public MoveObjectsHandler(AdvancedArmCannon armCannon, float moveSpeed, float rotateSpeed, CinemachineLook cinemachineLook, AdvancedPlayerMovement playerMovement)
     {
@@ -51,6 +54,13 @@ public class MoveObjectsHandler
                     }
 
                     movableObject.Grab();
+
+                    // Check if the object is already in the released objects list
+                    if (releasedObjects.Contains(heldObject))
+                    {
+                        releasedObjects.Remove(heldObject);
+                        ResetObjectColor(heldObject);
+                    }
                 }
             }
         }
@@ -72,7 +82,7 @@ public class MoveObjectsHandler
 
             if (heldObjectRigidbody != null)
             {
-                ManageReleasedObjects(heldObject); // Manage the object when released
+                ManageReleasedObjects(heldObject);
             }
 
             heldObject = null;
@@ -82,16 +92,20 @@ public class MoveObjectsHandler
 
     private void ManageReleasedObjects(GameObject releasedObject)
     {
+        // Add the object to the released objects list
         if (!releasedObjects.Contains(releasedObject))
         {
             releasedObjects.Add(releasedObject);
+            ChangeObjectColor(releasedObject, queuedObjectColor);
             DisablePhysics(releasedObject);
         }
 
+        // Remove the oldest object if the list exceeds the maximum size
         if (releasedObjects.Count > maxStoredObjects)
         {
             GameObject oldestObject = releasedObjects[0];
             releasedObjects.RemoveAt(0);
+            ResetObjectColor(oldestObject);
             EnablePhysics(oldestObject);
             ResetObjectState(oldestObject);
         }
@@ -177,6 +191,28 @@ public class MoveObjectsHandler
         playerMovement.LockRotation(false);
 
         isRotatingObject = false;
+    }
+
+    private void ChangeObjectColor(GameObject obj, Color color)
+    {
+        Renderer renderer = obj.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            originalColors[obj] = renderer.material.color;
+            renderer.material.color = color;
+        }
+    }
+
+    private void ResetObjectColor(GameObject obj)
+    {
+        if (originalColors.TryGetValue(obj, out Color originalColor))
+        {
+            Renderer renderer = obj.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = originalColor;
+            }
+        }
     }
 
     public void Update()
