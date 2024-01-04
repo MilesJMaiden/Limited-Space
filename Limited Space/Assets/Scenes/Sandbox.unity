@@ -2799,7 +2799,7 @@ MonoBehaviour:
   sizeReductionFactor: 10
   shrinkDuration: 1
   climbingSpeed: 3
-  wallJumpForce: 40
+  wallJumpForce: 6
 --- !u!1 &1383624389
 GameObject:
   m_ObjectHideFlags: 0

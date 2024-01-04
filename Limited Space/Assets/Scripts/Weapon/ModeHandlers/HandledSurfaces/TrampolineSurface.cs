@@ -1,3 +1,4 @@
+// TrampolineSurface.cs
 using UnityEngine;
 
 public class TrampolineSurface : MonoBehaviour
@@ -11,7 +12,19 @@ public class TrampolineSurface : MonoBehaviour
             var playerMovement = collision.gameObject.GetComponent<AdvancedPlayerMovement>();
             if (playerMovement != null)
             {
-                playerMovement.ApplyBounce(bounceMultiplier);
+                playerMovement.ApplyTrampolineBounce(bounceMultiplier);
+            }
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            var playerMovement = collision.gameObject.GetComponent<AdvancedPlayerMovement>();
+            if (playerMovement != null)
+            {
+                playerMovement.OnTrampolineExit();
             }
         }
     }

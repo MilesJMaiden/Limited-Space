@@ -105,6 +105,22 @@ public class AdvancedPlayerMovement : MonoBehaviour
     public float climbingSpeed = 3.0f;
     public float wallJumpForce = 10.0f; // Wall jump force
 
+    private bool isOnTrampoline = false;
+    private float trampolineBounceMultiplier = 1.0f;
+    private float lastTrampolineTouchTime = 0f;
+    private float trampolineJumpThreshold = 0.2f;
+
+    // Add new fields for trampoline bounce logic
+    private int bounceCount = 0;
+    private const int maxBounceCount = 5; // Maximum number of bounces
+    private float bounceDamping = 0.8f; // Reduction factor for each bounce
+
+    private bool attemptHighBounce = false;
+    private const float highBounceMultiplier = 2.0f; // Multiplier for the enhanced bounce
+    private const float bounceTimingWindow = 0.2f; // Time window for enhanced bounce
+    private float lastLandingTime; // Time when the player last landed
+
+
     private void Awake()
     {
         // Initialize controls and components
@@ -138,6 +154,8 @@ public class AdvancedPlayerMovement : MonoBehaviour
         {
             Debug.LogError("Cinemachine Virtual Camera not found in the scene.");
         }
+
+        isOnTrampoline = false;
     }
 
     private void OnEnable()
@@ -182,9 +200,24 @@ public class AdvancedPlayerMovement : MonoBehaviour
                     isJumping = false;
                     ResetJumpState();
                 }
+
+                // Check for jump input within the timing window
+                if (isOnTrampoline && playerControls.FPSPlayerActions.Jump.triggered)
+                {
+                    float timeSinceLanding = Time.time - lastLandingTime;
+                    if (timeSinceLanding <= bounceTimingWindow)
+                    {
+                        attemptHighBounce = true;
+                    }
+                    else
+                    {
+                        PerformTrampolineJump();
+                    }
+                }
             }
         }
     }
+
 
     private void FixedUpdate()
     {
@@ -267,15 +300,25 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         if (isClimbing)
         {
-            // Calculate the jump direction based on the player's facing direction
-            Vector3 jumpDirection = transform.forward + Vector3.up;
-            rb.velocity = jumpDirection.normalized * jumpForce; // You might need to adjust the force
-            StopClimbing(); // Stop climbing when jumping off
+            Vector3 jumpDirection;
+            if (IsFacingClimbableSurface())
+            {
+                // If facing the wall, jump backwards
+                jumpDirection = -transform.forward + Vector3.up;
+            }
+            else
+            {
+                // If not facing the wall, jump in the camera's facing direction
+                jumpDirection = Camera.main.transform.forward + Vector3.up;
+            }
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset current Y and Z velocity
+            rb.AddForce(jumpDirection.normalized * wallJumpForce, ForceMode.Impulse);
+            StopClimbing();
         }
         else if (currentJumpCount < maxJumpCount && canJump && isGrounded)
         {
             PerformJump();
-            isJumping = true;
+            isJumping = true; // Set flag when jump is performed
         }
         else
         {
@@ -456,15 +499,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-    public void ApplyBounce(float bounceMultiplier)
-    {
-        // Check if the player is on the ground before applying the bounce
-        if (isGrounded)
-        {
-            rb.velocity = new Vector3(rb.velocity.x, jumpForce * bounceMultiplier, rb.velocity.z);
-        }
-    }
-
     private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
     {
         // Adjust jump force relative to the size
@@ -540,6 +574,51 @@ public class AdvancedPlayerMovement : MonoBehaviour
         return false;
     }
 
+    public void OnTrampolineEnter(float multiplier)
+    {
+        isOnTrampoline = true;
+        trampolineBounceMultiplier = multiplier;
+        lastTrampolineTouchTime = Time.time;
+    }
+
+    public void OnTrampolineExit()
+    {
+        isOnTrampoline = false;
+    }
+
+    private void PerformTrampolineJump()
+    {
+        float bounceForce;
+        if (attemptHighBounce)
+        {
+            bounceForce = jumpForce * highBounceMultiplier;
+            attemptHighBounce = false; // Reset the flag
+        }
+        else
+        {
+            bounceForce = jumpForce * trampolineBounceMultiplier;
+        }
+
+        rb.velocity = new Vector3(rb.velocity.x, bounceForce, rb.velocity.z);
+        isOnTrampoline = false; // Reset the trampoline state
+        bounceCount = 0; // Reset the bounce count
+    }
+
+    public void ApplyTrampolineBounce(float initialBounceMultiplier)
+    {
+        if (bounceCount < maxBounceCount)
+        {
+            float bounceForce = jumpForce * initialBounceMultiplier * Mathf.Pow(bounceDamping, bounceCount);
+            rb.velocity = new Vector3(rb.velocity.x, bounceForce, rb.velocity.z);
+            bounceCount++;
+        }
+        else
+        {
+            // Reset the bounce count and stop bouncing
+            bounceCount = 0;
+            isOnTrampoline = false;
+        }
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -547,7 +626,14 @@ public class AdvancedPlayerMovement : MonoBehaviour
         {
             isGrounded = true;
             Debug.Log("OnCollisionEnter - Grounded");
+            isOnTrampoline = false;
         }
+
+        if (collision.gameObject.CompareTag("Trampoline"))
+        {
+            lastLandingTime = Time.time; // Record the landing time
+        }
+
     }
 
     private void OnCollisionExit(Collision collision)
