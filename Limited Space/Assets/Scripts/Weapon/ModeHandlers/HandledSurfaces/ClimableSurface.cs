@@ -2,6 +2,21 @@ using UnityEngine;
 
 public class ClimbableSurface : MonoBehaviour
 {
+    private BoxCollider triggerCollider;
+
+    public void SetTriggerCollider(BoxCollider collider)
+    {
+        triggerCollider = collider;
+    }
+
+    public void RemoveTriggerCollider()
+    {
+        if (triggerCollider != null)
+        {
+            Destroy(triggerCollider);
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -9,6 +24,7 @@ public class ClimbableSurface : MonoBehaviour
             var playerMovement = other.GetComponent<AdvancedPlayerMovement>();
             if (playerMovement != null)
             {
+                Debug.Log("Climbing enabled");
                 playerMovement.EnableClimbing(true);
             }
         }
@@ -21,6 +37,7 @@ public class ClimbableSurface : MonoBehaviour
             var playerMovement = other.GetComponent<AdvancedPlayerMovement>();
             if (playerMovement != null)
             {
+                Debug.Log("Climbing disabled");
                 playerMovement.EnableClimbing(false);
             }
         }

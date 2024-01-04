@@ -100,8 +100,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private bool isSmall = false;
     private bool isChangingSize = false; // Flag to indicate if currently changing size
 
-    public bool isClimbing = false;
+    private bool nearClimbableSurface = false;
+    private bool isClimbing = false;
     public float climbingSpeed = 3.0f;
+    public float wallJumpForce = 10.0f; // Wall jump force
 
     private void Awake()
     {
@@ -154,45 +156,48 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        HandleClimbingInput();
+
         if (isClimbing)
         {
-            HandleClimbing();
+            HandleClimbingMovement();
         }
-
-        if (!isChangingSize)
+        else
         {
-            HandleCrouchInput();
-            AlignPlayerWithCameraDirection();
-        }
+            // Check if the player is facing a climbable surface and pressing forward
+            if (nearClimbableSurface && IsFacingClimbableSurface() && playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().y > 0)
+            {
+                StartClimbing();
+            }
+            else
+            {
+                if (!isChangingSize)
+                {
+                    HandleCrouchInput();
+                    AlignPlayerWithCameraDirection();
+                }
 
-        if (isGrounded && isJumping)
-        {
-            isJumping = false;
-            ResetJumpState();
+                if (isGrounded && isJumping)
+                {
+                    isJumping = false;
+                    ResetJumpState();
+                }
+            }
         }
-
     }
 
     private void FixedUpdate()
     {
         if (!isChangingSize)
         {
-            Move();
-            if (!isGrounded)
+            if (!isClimbing)
             {
-                ApplyCustomGravity();
-            }
-
-            CheckGrounded();
-
-            if (isGrounded && wasInAir)
-            {
-                wasInAir = false;
-                ResetJumpState(); // Reset jump state when grounded
-            }
-            else if (!isGrounded)
-            {
-                wasInAir = true;
+                Move();
+                if (!isGrounded)
+                {
+                    ApplyCustomGravity();
+                }
+                CheckGrounded();
             }
         }
     }
@@ -260,10 +265,17 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void OnJumpPerformed(InputAction.CallbackContext context)
     {
-        if (currentJumpCount < maxJumpCount && canJump && isGrounded)
+        if (isClimbing)
+        {
+            // Calculate the jump direction based on the player's facing direction
+            Vector3 jumpDirection = transform.forward + Vector3.up;
+            rb.velocity = jumpDirection.normalized * jumpForce; // You might need to adjust the force
+            StopClimbing(); // Stop climbing when jumping off
+        }
+        else if (currentJumpCount < maxJumpCount && canJump && isGrounded)
         {
             PerformJump();
-            isJumping = true; // Set flag when jump is performed
+            isJumping = true;
         }
         else
         {
@@ -273,10 +285,26 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void PerformJump()
     {
-        float jumpForceToUse = isCrouching ? jumpForce * crouchJumpMultiplier : jumpForce;
+        Vector3 jumpDirection;
+        float jumpForceToUse;
 
+        if (isClimbing)
+        {
+            // Jump away from the wall in the direction the player is facing
+            jumpDirection = transform.forward + Vector3.up;
+            jumpForceToUse = wallJumpForce; // Use the specific wall jump force
+            StopClimbing(); // Stop climbing when the player jumps off
+        }
+        else
+        {
+            // Regular vertical jump
+            jumpDirection = Vector3.up;
+            jumpForceToUse = isCrouching ? jumpForce * crouchJumpMultiplier : jumpForce;
+        }
+
+        // Apply the jump force
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-        rb.AddForce(Vector3.up * jumpForceToUse, ForceMode.Impulse);
+        rb.AddForce(jumpDirection.normalized * jumpForceToUse, ForceMode.Impulse);
 
         currentJumpCount++;
         lastJumpTime = Time.time;
@@ -453,24 +481,65 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         isClimbing = enable;
         rb.useGravity = !enable;
-    }
-
-    private void HandleClimbing()
-    {
-        // Use the same input as walking for climbing
-        float verticalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().y;
-        float horizontalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().x;
-
-        Vector3 climbingMovement = new Vector3(horizontalInput, verticalInput, 0) * climbingSpeed;
-        transform.Translate(climbingMovement * Time.deltaTime);
-
-        // Automatically stop climbing if the player becomes grounded
-        if (isGrounded)
+        if (enable)
         {
-            isClimbing = false;
-            rb.useGravity = true;
+            rb.velocity = Vector3.zero; // Stop any current movement when starting to climb
         }
     }
+
+    private void StartClimbing()
+    {
+        isClimbing = true;
+        rb.useGravity = false;
+        rb.velocity = Vector3.zero; // Reset velocity when starting to climb
+    }
+
+    private void StopClimbing()
+    {
+        isClimbing = false;
+        rb.useGravity = true;
+    }
+
+    private void HandleClimbingInput()
+    {
+        if (nearClimbableSurface && playerControls.FPSPlayerActions.Interact.triggered)
+        {
+            if (!isClimbing)
+            {
+                StartClimbing();
+            }
+            else
+            {
+                StopClimbing();
+            }
+        }
+        else if (isClimbing && !nearClimbableSurface)
+        {
+            StopClimbing();
+        }
+    }
+
+    private void HandleClimbingMovement()
+    {
+        if (isClimbing)
+        {
+            float verticalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().y;
+            float horizontalInput = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>().x;
+            Vector3 climbingMovement = new Vector3(horizontalInput, verticalInput, 0) * climbingSpeed;
+            rb.MovePosition(rb.position + climbingMovement * Time.deltaTime);
+        }
+    }
+
+    private bool IsFacingClimbableSurface()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 1f)) // Adjust distance as needed
+        {
+            return hit.collider.CompareTag("Wall");
+        }
+        return false;
+    }
+
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -487,6 +556,26 @@ public class AdvancedPlayerMovement : MonoBehaviour
         {
             isGrounded = false;
             Debug.Log("OnCollisionExit - Not Grounded");
+        }
+    }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Wall"))
+        {
+            nearClimbableSurface = true;
+        }
+    }
+
+    public void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Wall"))
+        {
+            nearClimbableSurface = false;
+            if (isClimbing)
+            {
+                StopClimbing();
+            }
         }
     }
 }

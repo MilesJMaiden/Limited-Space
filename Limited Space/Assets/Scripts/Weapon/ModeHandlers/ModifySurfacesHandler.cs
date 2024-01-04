@@ -6,14 +6,13 @@ public class ModifySurfacesHandler
     private AdvancedArmCannon armCannon;
     private Queue<GameObject> modifiedSurfaces;
     private Dictionary<GameObject, Color> originalColors;
-    private int maxModifiedSurfaces;
+    private const int MaxActiveSurfaces = 3; // Max number of active surfaces
     public Color wallModifiedColor = Color.red; // Set this color in the Inspector for walls
     public Color floorModifiedColor = Color.green; // Set this color in the Inspector for floors
 
     public ModifySurfacesHandler(AdvancedArmCannon armCannon, int maxModifiedSurfaces)
     {
         this.armCannon = armCannon;
-        this.maxModifiedSurfaces = maxModifiedSurfaces;
         modifiedSurfaces = new Queue<GameObject>();
         originalColors = new Dictionary<GameObject, Color>();
     }
@@ -24,31 +23,50 @@ public class ModifySurfacesHandler
         if (Physics.Raycast(armCannon.transform.position, armCannon.transform.forward, out hit))
         {
             GameObject surface = hit.collider.gameObject;
-            if (!originalColors.ContainsKey(surface))
+
+            // Check if the surface is already in the queue
+            if (!modifiedSurfaces.Contains(surface))
             {
-                Renderer surfaceRenderer = surface.GetComponent<Renderer>();
-                originalColors[surface] = surfaceRenderer.material.color;
-
-                // Determine if it's a wall or a floor and modify accordingly
-                if (IsWall(surface))
+                if (!originalColors.ContainsKey(surface))
                 {
-                    surfaceRenderer.material.color = wallModifiedColor;
-                    MakeClimbable(surface);
+                    Renderer surfaceRenderer = surface.GetComponent<Renderer>();
+                    originalColors[surface] = surfaceRenderer.material.color;
+
+                    // Determine type of surface and modify
+                    if (IsWall(surface))
+                    {
+                        surfaceRenderer.material.color = wallModifiedColor;
+                        AddClimbingTrigger(surface);
+                    }
+                    else if (IsFloor(surface))
+                    {
+                        surfaceRenderer.material.color = floorModifiedColor;
+                        MakeTrampoline(surface);
+                    }
                 }
-                else if (IsFloor(surface))
+
+                // If the queue is full, reset the oldest surface
+                if (modifiedSurfaces.Count >= MaxActiveSurfaces)
                 {
-                    surfaceRenderer.material.color = floorModifiedColor;
-                    MakeTrampoline(surface);
+                    GameObject oldSurface = modifiedSurfaces.Dequeue();
+                    ResetSurfaceBehavior(oldSurface);
                 }
-            }
 
-            if (modifiedSurfaces.Count >= maxModifiedSurfaces)
-            {
-                GameObject oldSurface = modifiedSurfaces.Dequeue();
-                ResetSurfaceBehavior(oldSurface);
+                modifiedSurfaces.Enqueue(surface);
             }
+        }
+    }
 
-            modifiedSurfaces.Enqueue(surface);
+    private void AddClimbingTrigger(GameObject surface)
+    {
+        // Add a trigger collider for climbing
+        if (surface.GetComponent<ClimbableSurface>() == null)
+        {
+            ClimbableSurface climbable = surface.AddComponent<ClimbableSurface>();
+            BoxCollider triggerCollider = surface.AddComponent<BoxCollider>();
+            triggerCollider.isTrigger = true;
+            triggerCollider.size = new Vector3(1.1f, 1.1f, 1.1f); // Adjust size as needed
+            climbable.SetTriggerCollider(triggerCollider);
         }
     }
 
@@ -65,43 +83,11 @@ public class ModifySurfacesHandler
         return surface.CompareTag("Ground");
     }
 
-    private void MakeClimbable(GameObject surface)
-    {
-        if (surface.GetComponent<ClimbableSurface>() == null)
-        {
-            surface.AddComponent<ClimbableSurface>();
-        }
-    }
-
     private void MakeTrampoline(GameObject surface)
     {
         if (surface.GetComponent<TrampolineSurface>() == null)
         {
             surface.AddComponent<TrampolineSurface>();
-        }
-    }
-
-    private void ApplySurfaceProperties(GameObject surface)
-    {
-        if (IsWall(surface))
-        {
-            // Apply climbable properties
-            ClimbableSurface climbable = surface.GetComponent<ClimbableSurface>();
-            if (climbable == null)
-            {
-                climbable = surface.AddComponent<ClimbableSurface>();
-            }
-            // Set properties like climbing speed or stamina usage
-        }
-        else if (IsFloor(surface))
-        {
-            // Apply trampoline properties
-            TrampolineSurface trampoline = surface.GetComponent<TrampolineSurface>();
-            if (trampoline == null)
-            {
-                trampoline = surface.AddComponent<TrampolineSurface>();
-            }
-            // Set properties like bounce strength
         }
     }
 
@@ -111,15 +97,29 @@ public class ModifySurfacesHandler
         {
             ResetSurfaceColor(surface);
 
+            // Remove the ClimbableSurface component and its trigger collider
             var climbable = surface.GetComponent<ClimbableSurface>();
             if (climbable != null)
             {
+                // Find and destroy the trigger collider added for climbing
+                Collider[] colliders = surface.GetComponents<Collider>();
+                foreach (var collider in colliders)
+                {
+                    if (collider.isTrigger)
+                    {
+                        UnityEngine.Object.Destroy(collider);
+                        break; // Assuming there is only one trigger collider for climbing
+                    }
+                }
+
                 UnityEngine.Object.Destroy(climbable);
             }
 
+            // Similar logic for TrampolineSurface, if applicable
             var trampoline = surface.GetComponent<TrampolineSurface>();
             if (trampoline != null)
             {
+                // Remove any specific components or settings related to trampoline
                 UnityEngine.Object.Destroy(trampoline);
             }
         }
