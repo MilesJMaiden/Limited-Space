@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class HUDManager : MonoBehaviour
 {
@@ -10,14 +11,19 @@ public class HUDManager : MonoBehaviour
     public TextMeshProUGUI modifySurfacesModeIndicator;
     public TextMeshProUGUI blasterModeIndicator;
 
+    public CanvasGroup startPanelCanvasGroup;
+
     // Define colors
     public Color defaultColor = Color.white;
     public Color activeColor = Color.yellow;
+
+    public float fadeDuration = 2f;
 
     private void Start()
     {
         // Initially disable the Weapon Mode UI
         SetWeaponModeUIActive(false);
+        EnableAndFadeOutPanel(startPanelCanvasGroup, fadeDuration);
     }
 
     public void UpdateWeaponModeIndicator(AdvancedArmCannon.WeaponMode currentMode, bool moveObjectsUnlocked, bool modifySurfacesUnlocked, bool blasterUnlocked)
@@ -66,5 +72,25 @@ public class HUDManager : MonoBehaviour
     public void SetWeaponModeUIActive(bool isActive)
     {
         weaponModeUI.SetActive(isActive);
+    }
+
+    private void EnableAndFadeOutPanel(CanvasGroup panel, float duration)
+    {
+        panel.gameObject.SetActive(true); // Enable the panel first
+        panel.alpha = 1; // Set alpha to 1 (fully opaque) before fading out
+        StartCoroutine(FadeOutPanel(panel, duration));
+    }
+    private IEnumerator FadeOutPanel(CanvasGroup panel, float duration)
+    {
+        float currentTime = 0;
+
+        while (currentTime < duration)
+        {
+            currentTime += Time.deltaTime;
+            panel.alpha = Mathf.Lerp(1, 0, currentTime / duration); // Lerp from 1 (opaque) to 0 (transparent)
+            yield return null;
+        }
+
+        panel.gameObject.SetActive(false); // Optionally disable the panel after fading out
     }
 }
