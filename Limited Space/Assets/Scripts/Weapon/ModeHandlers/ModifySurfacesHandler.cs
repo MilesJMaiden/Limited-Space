@@ -65,7 +65,7 @@ public class ModifySurfacesHandler
             ClimbableSurface climbable = surface.AddComponent<ClimbableSurface>();
             BoxCollider triggerCollider = surface.AddComponent<BoxCollider>();
             triggerCollider.isTrigger = true;
-            triggerCollider.size = new Vector3(1.1f, 1.1f, 1.1f); // Adjust size as needed
+            triggerCollider.size = new Vector3(1.025f, 0.995f, 1.025f); // Adjust size as needed
             climbable.SetTriggerCollider(triggerCollider);
         }
     }

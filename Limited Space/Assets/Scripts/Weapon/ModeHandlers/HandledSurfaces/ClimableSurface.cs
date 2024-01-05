@@ -1,32 +1,24 @@
+using System.Collections;
 using UnityEngine;
 
 public class ClimbableSurface : MonoBehaviour
 {
     private BoxCollider triggerCollider;
+    private bool isPlayerTransitioning = false;
 
     public void SetTriggerCollider(BoxCollider collider)
     {
         triggerCollider = collider;
     }
 
-    public void RemoveTriggerCollider()
-    {
-        if (triggerCollider != null)
-        {
-            Destroy(triggerCollider);
-        }
-    }
-
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !isPlayerTransitioning)
         {
-            var playerMovement = other.GetComponent<AdvancedPlayerMovement>();
-            if (playerMovement != null)
-            {
-                Debug.Log("Climbing enabled");
-                playerMovement.EnableClimbing(true);
-            }
+            Debug.Log("Climbing enabled");
+            other.GetComponent<AdvancedPlayerMovement>().EnableClimbing(true);
+            isPlayerTransitioning = true;
+            StartCoroutine(ResetTransitionState());
         }
     }
 
@@ -34,12 +26,22 @@ public class ClimbableSurface : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            var playerMovement = other.GetComponent<AdvancedPlayerMovement>();
-            if (playerMovement != null)
-            {
-                Debug.Log("Climbing disabled");
-                playerMovement.EnableClimbing(false);
-            }
+            Debug.Log("Climbing disabled");
+            other.GetComponent<AdvancedPlayerMovement>().EnableClimbing(false);
+        }
+    }
+
+    private IEnumerator ResetTransitionState()
+    {
+        yield return new WaitForSeconds(1f); // Adjust time as needed
+        isPlayerTransitioning = false;
+    }
+
+    public void RemoveTriggerCollider()
+    {
+        if (triggerCollider != null)
+        {
+            Destroy(triggerCollider);
         }
     }
 }

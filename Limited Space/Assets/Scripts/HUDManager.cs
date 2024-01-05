@@ -3,6 +3,8 @@ using TMPro;
 
 public class HUDManager : MonoBehaviour
 {
+    public GameObject weaponModeUI;
+
     // UI references for mode indicators
     public TextMeshProUGUI moveObjectsModeIndicator;
     public TextMeshProUGUI modifySurfacesModeIndicator;
@@ -12,8 +14,12 @@ public class HUDManager : MonoBehaviour
     public Color defaultColor = Color.white;
     public Color activeColor = Color.yellow;
 
-    // Method to update the active weapon mode indicator
-    // Method to update the active weapon mode indicator
+    private void Start()
+    {
+        // Initially disable the Weapon Mode UI
+        SetWeaponModeUIActive(false);
+    }
+
     public void UpdateWeaponModeIndicator(AdvancedArmCannon.WeaponMode currentMode, bool moveObjectsUnlocked, bool modifySurfacesUnlocked, bool blasterUnlocked)
     {
         // Update colors and activation based on current mode and unlock status
@@ -55,5 +61,10 @@ public class HUDManager : MonoBehaviour
                     blasterModeIndicator.gameObject.SetActive(true);
                 break;
         }
+    }
+
+    public void SetWeaponModeUIActive(bool isActive)
+    {
+        weaponModeUI.SetActive(isActive);
     }
 }

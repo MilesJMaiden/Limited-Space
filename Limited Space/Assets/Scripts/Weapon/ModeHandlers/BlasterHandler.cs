@@ -11,8 +11,8 @@ public class BlasterHandler
     public Transform firePoint; // Assign the FirePoint Transform in the Inspector
 
     // Variables for projectile behavior
-    public float minProjectileSize = 1f;
-    public float maxProjectileSize = 5f;
+    public float minProjectileSize = 1.5f;
+    public float maxProjectileSize = 4.5f;
     public float minProjectileSpeed = 40.0f;
     public float maxProjectileSpeed = 60.0f;
 

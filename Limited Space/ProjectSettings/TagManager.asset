@@ -8,6 +8,9 @@ TagManager:
   - Moveable
   - BlasterProjectile
   - Wall
+  - Trampoline
+  - Climbable
+  - ClimbTopTrigger
   layers:
   - Default
   - TransparentFX
@@ -17,7 +20,7 @@ TagManager:
   - UI
   - Player
   - Ground
-  - 
+  - Climbable
   - 
   - 
   - 

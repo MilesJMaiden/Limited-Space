@@ -100,6 +100,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private bool isSmall = false;
     private bool isChangingSize = false; // Flag to indicate if currently changing size
 
+    [Header("Climbing Settings")]
     private bool nearClimbableSurface = false;
     private bool isClimbing = false;
     public float climbingSpeed = 3.0f;
@@ -119,6 +120,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private const float highBounceMultiplier = 2.0f; // Multiplier for the enhanced bounce
     private const float bounceTimingWindow = 0.2f; // Time window for enhanced bounce
     private float lastLandingTime; // Time when the player last landed
+
+    private bool hasWeapon = false;
+    public GameObject weaponObject;
 
 
     private void Awake()
@@ -300,19 +304,12 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         if (isClimbing)
         {
-            Vector3 jumpDirection;
-            if (IsFacingClimbableSurface())
-            {
-                // If facing the wall, jump backwards
-                jumpDirection = -transform.forward + Vector3.up;
-            }
-            else
-            {
-                // If not facing the wall, jump in the camera's facing direction
-                jumpDirection = Camera.main.transform.forward + Vector3.up;
-            }
+            // Calculate jump direction based on where the player is looking
+            Vector3 jumpDirection = Camera.main.transform.forward + Vector3.up;
+            float climbJumpForce = wallJumpForce; // Use the wall jump force for climbing jump
+
             rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset current Y and Z velocity
-            rb.AddForce(jumpDirection.normalized * wallJumpForce, ForceMode.Impulse);
+            rb.AddForce(jumpDirection.normalized * climbJumpForce, ForceMode.Impulse);
             StopClimbing();
         }
         else if (currentJumpCount < maxJumpCount && canJump && isGrounded)
@@ -369,6 +366,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     private void CheckGrounded()
     {
+        if (isClimbing)
+            return;  // Skip ground checking when climbing
+
         Vector3 origin = transform.position + capsuleCollider.center;
         float adjustedRadius = groundCheckRadius * transform.localScale.y;
         float adjustedDistance = groundCheckDistance * transform.localScale.y;
@@ -620,6 +620,47 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
+    public void EnableWeapon()
+    {
+        if (weaponObject != null)
+        {
+            // Find the "Model" child object and enable it
+            Transform modelTransform = weaponObject.transform;
+            if (modelTransform != null)
+            {
+                modelTransform.gameObject.SetActive(true);
+            }
+            else
+            {
+                Debug.LogWarning("Model not found in weaponObject");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Weapon object not assigned in Player");
+        }
+        // Additional logic if needed
+    }
+
+    public bool HasWeapon()
+    {
+        return hasWeapon;
+    }
+
+    public bool CanInteract()
+    {
+        return true; 
+    }
+
+    private void TransitionToTopOfSurface()
+    {
+        StopClimbing();
+
+        // Additional logic to position the player correctly on the surface
+        // This might involve setting the player's position and rotation
+        // Example: transform.position = new Vector3(transform.position.x, other.transform.position.y, transform.position.z);
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if ((groundLayer.value & (1 << collision.gameObject.layer)) > 0)
@@ -647,6 +688,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
+        if (other.CompareTag("ClimbTopTrigger") && isClimbing)
+        {
+            TransitionToTopOfSurface();
+        }
+
         if (other.CompareTag("Wall"))
         {
             nearClimbableSurface = true;
