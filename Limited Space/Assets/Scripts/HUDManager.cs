@@ -4,6 +4,8 @@ using System.Collections;
 
 public class HUDManager : MonoBehaviour
 {
+    public static HUDManager Instance { get; private set; }
+
     public GameObject weaponModeUI;
 
     // UI references for mode indicators
@@ -19,6 +21,23 @@ public class HUDManager : MonoBehaviour
 
     public float fadeDuration = 2f;
 
+    public GameObject redKeycardUI;
+    public GameObject greenKeycardUI;
+    public GameObject blueKeycardUI;
+    public GameObject goldKeycardUI;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            // Other initialization code, if necessary
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
+    }
     private void Start()
     {
         // Initially disable the Weapon Mode UI
@@ -45,6 +64,25 @@ public class HUDManager : MonoBehaviour
         {
             blasterModeIndicator.color = (currentMode == AdvancedArmCannon.WeaponMode.Blaster) ? activeColor : defaultColor;
             blasterModeIndicator.gameObject.SetActive(blasterUnlocked);
+        }
+    }
+
+    public void UpdateKeycardUI(Keycard.KeycardType keycardType, bool isActive)
+    {
+        switch (keycardType)
+        {
+            case Keycard.KeycardType.Red:
+                redKeycardUI.SetActive(isActive);
+                break;
+            case Keycard.KeycardType.Green:
+                greenKeycardUI.SetActive(isActive);
+                break;
+            case Keycard.KeycardType.Blue:
+                blueKeycardUI.SetActive(isActive);
+                break;
+            case Keycard.KeycardType.Gold:
+                goldKeycardUI.SetActive(isActive);
+                break;
         }
     }
 
