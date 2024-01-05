@@ -5,7 +5,7 @@ using System.Collections;
 public class Door : MonoBehaviour
 {
     public Keycard.KeycardType requiredKeycard;
-    public TextMeshPro worldSpaceText; // Assign in Inspector
+    public TextMeshProUGUI worldSpaceText; // Assign in Inspector
     public float openHeight = 3f; // Height to which the door opens
     public float openSpeed = 1f; // Speed at which the door opens
 
