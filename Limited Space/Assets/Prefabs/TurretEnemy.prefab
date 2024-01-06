@@ -298,6 +298,7 @@ MonoBehaviour:
   rotatablePart: {fileID: 527845265215614990}
   vfxPrefab: {fileID: 0}
   audioSourcePrefab: {fileID: 0}
+  playerCameraTransform: {fileID: 0}
 --- !u!65 &3632945220748320752
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -22,6 +22,8 @@ public class TurretEnemy : MonoBehaviour
     public GameObject vfxPrefab; // Visual effect prefab
     public AudioSource audioSourcePrefab;
 
+    public Transform playerCameraTransform;
+
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
@@ -59,8 +61,11 @@ public class TurretEnemy : MonoBehaviour
 
     private void AimTowardsPlayer()
     {
-        Vector3 directionToPlayer = player.transform.position - rotatablePart.position;
-        Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+        if (!playerCameraTransform)
+            return;
+
+        Vector3 directionToCamera = playerCameraTransform.position - rotatablePart.position;
+        Quaternion lookRotation = Quaternion.LookRotation(directionToCamera);
         Vector3 rotation = Quaternion.Lerp(rotatablePart.rotation, lookRotation, Time.deltaTime * rotationSpeed).eulerAngles;
         rotatablePart.rotation = Quaternion.Euler(0f, rotation.y, 0f);
     }
@@ -100,7 +105,7 @@ private void FireProjectile()
     EnemyProjectile enemyProjectileScript = projectile.GetComponent<EnemyProjectile>(); // Corrected to EnemyProjectile
     if (enemyProjectileScript != null)
     {
-        enemyProjectileScript.SetDirection((player.transform.position - firePoint.position).normalized);
+        enemyProjectileScript.SetDirection((playerCameraTransform.transform.position - firePoint.position).normalized);
     }
     else
     {
