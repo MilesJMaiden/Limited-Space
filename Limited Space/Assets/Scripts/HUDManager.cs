@@ -1,10 +1,13 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.UI;
 
 public class HUDManager : MonoBehaviour
 {
     public static HUDManager Instance { get; private set; }
+
+    public Slider playerHealthSlider;
 
     public GameObject weaponModeUI;
 
@@ -130,5 +133,15 @@ public class HUDManager : MonoBehaviour
         }
 
         panel.gameObject.SetActive(false); // Optionally disable the panel after fading out
+    }
+
+    // Method to update the player's health bar
+    public void UpdatePlayerHealthDisplay(float currentHealth, float maxHealth)
+    {
+        if (playerHealthSlider != null)
+        {
+            playerHealthSlider.maxValue = maxHealth;
+            playerHealthSlider.value = currentHealth;
+        }
     }
 }

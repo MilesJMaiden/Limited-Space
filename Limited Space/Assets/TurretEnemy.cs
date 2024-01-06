@@ -19,6 +19,9 @@ public class TurretEnemy : MonoBehaviour
 
     public Transform rotatablePart;
 
+    public GameObject vfxPrefab; // Visual effect prefab
+    public AudioSource audioSourcePrefab;
+
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
@@ -108,6 +111,7 @@ private void FireProjectile()
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
+        UpdateHealthUI(); // Make sure the health is updated here
         if (currentHealth <= 0)
         {
             Die();
@@ -116,7 +120,12 @@ private void FireProjectile()
 
     private void Die()
     {
-        // Handle turret destruction
+        // Instantiate VFX and play audio if assigned
+        if (vfxPrefab != null)
+            Instantiate(vfxPrefab, transform.position, Quaternion.identity);
+        if (audioSourcePrefab != null)
+            Instantiate(audioSourcePrefab, transform.position, Quaternion.identity);
+
         Destroy(gameObject);
     }
 

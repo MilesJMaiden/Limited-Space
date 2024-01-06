@@ -11,6 +11,7 @@ TagManager:
   - Trampoline
   - Climbable
   - ClimbTopTrigger
+  - EnemyProjectile
   layers:
   - Default
   - TransparentFX

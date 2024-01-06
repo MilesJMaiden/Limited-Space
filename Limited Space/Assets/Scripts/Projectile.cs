@@ -4,6 +4,7 @@ public class Projectile : MonoBehaviour
 {
     public GameObject impactEffectPrefab; // Assign in the Inspector
     public AudioClip impactSound; // Assign in the Inspector
+    public float damage = 10f; // Damage value of the projectile
     public float lifetime = 5.0f; // Lifetime of the projectile in seconds
 
     private float timer; // Internal timer
@@ -28,14 +29,16 @@ public class Projectile : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Handle the collision
-        HandleCollision();
-
-        // Disable or return the projectile to the object pool
+        TurretEnemy turret = collision.collider.GetComponent<TurretEnemy>();
+        if (turret != null)
+        {
+            turret.TakeDamage(damage);
+        }
+        HandleCollision(collision); // Pass the collision parameter
         DestroyProjectile();
     }
 
-    private void HandleCollision()
+    private void HandleCollision(Collision collision)
     {
         // Instantiate impact effect
         if (impactEffectPrefab != null)
@@ -49,7 +52,12 @@ public class Projectile : MonoBehaviour
             AudioSource.PlayClipAtPoint(impactSound, transform.position);
         }
 
-        // Additional collision handling, like dealing damage
+        // Check if the hit object is a turret and apply damage
+        TurretEnemy turret = collision.collider.GetComponent<TurretEnemy>();
+        if (turret != null)
+        {
+            turret.TakeDamage(damage);
+        }
     }
 
     private void DestroyProjectile()

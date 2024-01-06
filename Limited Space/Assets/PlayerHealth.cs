@@ -11,12 +11,15 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
-        currentHealth = maxHealth; // Initialize health
+        currentHealth = maxHealth;
+        HUDManager.Instance.UpdatePlayerHealthDisplay(currentHealth, maxHealth); // Initialize the health display
     }
 
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
+        HUDManager.Instance.UpdatePlayerHealthDisplay(currentHealth, maxHealth);
+
 
         // Trigger the health changed event
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
@@ -43,8 +46,18 @@ public class PlayerHealth : MonoBehaviour
         {
             currentHealth = maxHealth;
         }
+        HUDManager.Instance.UpdatePlayerHealthDisplay(currentHealth, maxHealth);
+    }
 
-        // Trigger the health changed event
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("EnemyProjectile"))
+        {
+            EnemyProjectile projectile = collision.gameObject.GetComponent<EnemyProjectile>();
+            if (projectile != null)
+            {
+                TakeDamage(projectile.damage);
+            }
+        }
     }
 }
