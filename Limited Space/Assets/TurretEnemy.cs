@@ -6,6 +6,7 @@ public class TurretEnemy : MonoBehaviour
     public float rotationSpeed = 5f;
     public float detectionRange = 10f;
     public float fireRate = 1f;
+    private float fireRateAcceleration = 0.05f;
     public GameObject projectilePrefab;
     public Transform firePoint;
     public Slider healthSlider;
@@ -84,11 +85,12 @@ public class TurretEnemy : MonoBehaviour
                     fireRateIncreaseTimer = 3f; // Cap the timer at 3 seconds for max fire rate
                 }
 
-                fireTimer -= Time.deltaTime * (fireRate / fireRateIncreaseTimer);
+                // Decrease fire timer at an accelerated rate
+                fireTimer -= Time.deltaTime * (fireRate / fireRateIncreaseTimer) * (1 + fireRateIncreaseTimer * fireRateAcceleration);
                 if (fireTimer <= 0f)
                 {
                     FireProjectile();
-                    fireTimer = 1f;
+                    ResetFireTimer();
                 }
             }
             else
@@ -98,20 +100,24 @@ public class TurretEnemy : MonoBehaviour
         }
     }
 
-private void FireProjectile()
-{
-    // Instantiate projectile and set its direction
-    GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-    EnemyProjectile enemyProjectileScript = projectile.GetComponent<EnemyProjectile>(); // Corrected to EnemyProjectile
-    if (enemyProjectileScript != null)
+    private void FireProjectile()
     {
-        enemyProjectileScript.SetDirection((playerCameraTransform.transform.position - firePoint.position).normalized);
+        // Instantiate projectile and set its direction
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+        EnemyProjectile enemyProjectileScript = projectile.GetComponent<EnemyProjectile>(); // Corrected to EnemyProjectile
+        if (enemyProjectileScript != null)
+        {
+            enemyProjectileScript.SetDirection((playerCameraTransform.transform.position - firePoint.position).normalized);
+        }
+        else
+        {
+            Debug.LogError("EnemyProjectile component not found on the projectile prefab.");
+        }
     }
-    else
+    private void ResetFireTimer()
     {
-        Debug.LogError("EnemyProjectile component not found on the projectile prefab.");
+        fireTimer = 1f / (1 + fireRateIncreaseTimer * fireRateAcceleration); // Reset fire timer based on the increased rate
     }
-}
 
     public void TakeDamage(float damage)
     {
@@ -138,6 +144,7 @@ private void FireProjectile()
     {
         healthSlider.value = currentHealth;
     }
+
 
     void OnDrawGizmos()
     {
