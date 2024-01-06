@@ -92,7 +92,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField, Tooltip("Head bobbing amplitude")]
     private float headBobAmplitude = 0.1f;
     private Vector3 cameraStartLocalPosition;
-    private float headBobTimer;
 
     [Header("Size Change Settings")]
     [SerializeField] private float sizeReductionFactor = 10f;
