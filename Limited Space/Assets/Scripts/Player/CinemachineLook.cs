@@ -91,18 +91,14 @@ public class CinemachineLook : MonoBehaviour
 
         if (!isEnabled)
         {
-            // Save current rotation
             SaveCurrentRotation();
-            // Disable the input axis to stop updating the camera rotation
             povComponent.m_HorizontalAxis.m_MaxSpeed = 0;
             povComponent.m_VerticalAxis.m_MaxSpeed = 0;
         }
         else
         {
-            // Re-enable the input axis
             povComponent.m_HorizontalAxis.m_MaxSpeed = mouseSensitivity;
             povComponent.m_VerticalAxis.m_MaxSpeed = mouseSensitivity;
-            // Restore the saved rotation
             RestoreSavedRotation();
         }
     }
