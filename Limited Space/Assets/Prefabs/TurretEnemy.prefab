@@ -275,7 +275,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 12.5
+  m_Radius: 13
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &8675735100212346971
 MonoBehaviour:
@@ -290,7 +290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 5
-  detectionRange: 10
+  detectionRange: 13
   fireRate: 4
   projectilePrefab: {fileID: 5642014445311736000, guid: 870e53bc772718648ad9616bbddc2177, type: 3}
   firePoint: {fileID: 3892538135126237}
