@@ -5,7 +5,7 @@ public class MainMenuController : MonoBehaviour
 {
     public void StartGame()
     {
-        SceneManager.LoadScene("Sandbox"); 
+        SceneManager.LoadScene("PlotStart"); 
     }
 
     public void OpenControls()
