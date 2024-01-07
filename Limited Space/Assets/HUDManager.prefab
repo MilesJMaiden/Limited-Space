@@ -643,13 +643,13 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 6724565619534852971}
   - {fileID: 4969752529280307093}
   - {fileID: 8278471167319026531}
   - {fileID: 7398562774883858561}
   - {fileID: 4131073322363161523}
   - {fileID: 154590928359395445}
   - {fileID: 2077539780707106933}
-  - {fileID: 6724565619534852971}
   - {fileID: 8808547845124764592}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
