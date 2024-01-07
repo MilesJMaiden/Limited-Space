@@ -1,4 +1,3 @@
-// TrampolineSurface.cs
 using UnityEngine;
 
 public class TrampolineSurface : MonoBehaviour

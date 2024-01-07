@@ -4,7 +4,8 @@ using System.Collections;
 
 public class EndTrigger : MonoBehaviour
 {
-    public CanvasGroup endPanelCanvasGroup; // Assign the CanvasGroup for the end panel
+    public CanvasGroup firstEndPanelCanvasGroup; // Assign the first CanvasGroup for the end panel
+    public CanvasGroup secondEndPanelCanvasGroup; // Assign the second CanvasGroup for the end panel
     public float fadeDuration = 2f; // Duration for fade-in effect
     public float waitTimeBeforeSceneChange = 2f; // Time to wait before changing scene
 
@@ -18,7 +19,11 @@ public class EndTrigger : MonoBehaviour
 
     private IEnumerator EndGameSequence()
     {
-        yield return StartCoroutine(FadeInCanvasGroup(endPanelCanvasGroup, fadeDuration));
+        // Fade in the first panel
+        yield return StartCoroutine(FadeInCanvasGroup(firstEndPanelCanvasGroup, fadeDuration));
+
+        // Fade in the second panel
+        yield return StartCoroutine(FadeInCanvasGroup(secondEndPanelCanvasGroup, fadeDuration));
 
         // Wait for a set time after the fade in completes
         yield return new WaitForSeconds(waitTimeBeforeSceneChange);
@@ -33,10 +38,10 @@ public class EndTrigger : MonoBehaviour
         while (currentTime < duration)
         {
             currentTime += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(0, 1, currentTime / duration);
+            canvasGroup.alpha = Mathf.Lerp(0, 1, currentTime / duration); 
             yield return null;
         }
 
-        canvasGroup.alpha = 1;
+        canvasGroup.alpha = 1; 
     }
 }

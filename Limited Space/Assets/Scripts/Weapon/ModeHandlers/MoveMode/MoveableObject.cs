@@ -4,7 +4,6 @@ public class MovableObject : MonoBehaviour
 {
     private Rigidbody rb;
 
-    // Indicates whether the object is currently being moved by the arm cannon
     public bool IsBeingMoved { get; private set; }
 
     void Awake()
@@ -18,10 +17,8 @@ public class MovableObject : MonoBehaviour
 
     public void Grab()
     {
-        // When the object is grabbed by the arm cannon
         IsBeingMoved = true;
 
-        // Optional: Turn off gravity and freeze rotation for smoother movement
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
@@ -39,6 +36,4 @@ public class MovableObject : MonoBehaviour
 
         // Additional logic when the object is released (e.g., visual effects, sound effects)
     }
-
-    // Optional: Implement additional methods for specific behaviors
 }

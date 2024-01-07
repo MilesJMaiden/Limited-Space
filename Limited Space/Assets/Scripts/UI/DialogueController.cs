@@ -23,7 +23,6 @@ public class DialogueController : MonoBehaviour
 
     void Start()
     {
-        // Initialize dialogues and set up UI
         InitializeDialogues();
         StartCoroutine(ShowDialogueUI());
     }
@@ -37,12 +36,12 @@ public class DialogueController : MonoBehaviour
     {
         dialogues = new List<string>()
         {
-            // Add your dialogues here
+            // dialogues here
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 
-            // ...
+
         };
     }
 
@@ -50,7 +49,6 @@ public class DialogueController : MonoBehaviour
     {
         if (isFadingIn)
         {
-            // If fading in, no further input handling needed here
             return;
         }
 
@@ -81,7 +79,7 @@ public class DialogueController : MonoBehaviour
                 // If any key is pressed, complete the fade instantly
                 SetUIVisible();
                 StartCoroutine(TypeDialogue(dialogues[currentDialogueIndex]));
-                yield break; // Exit the coroutine
+                yield break; // Exit
             }
 
             float alpha = elapsedTime / fadeDuration;

@@ -7,8 +7,8 @@ public class ModifySurfacesHandler
     private Queue<GameObject> modifiedSurfaces;
     private Dictionary<GameObject, Color> originalColors;
     private const int MaxActiveSurfaces = 3; // Max number of active surfaces
-    public Color wallModifiedColor = Color.red; // Set this color in the Inspector for walls
-    public Color floorModifiedColor = Color.green; // Set this color in the Inspector for floors
+    public Color wallModifiedColor = Color.red;
+    public Color floorModifiedColor = Color.green;
 
     public ModifySurfacesHandler(AdvancedArmCannon armCannon, int maxModifiedSurfaces)
     {
@@ -72,14 +72,11 @@ public class ModifySurfacesHandler
 
     private bool IsWall(GameObject surface)
     {
-        // Implement logic to determine if the surface is a wall
-        // Example: Check the surface's tag or layer
         return surface.CompareTag("Wall");
     }
 
     private bool IsFloor(GameObject surface)
     {
-        // Implement logic to determine if the surface is a floor
         return surface.CompareTag("Ground");
     }
 
@@ -138,8 +135,5 @@ public class ModifySurfacesHandler
         }
     }
 
-    public void Update()
-    {
-        // Additional update logic if needed
-    }
+    public void Update() { }
 }

@@ -3,8 +3,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// This script provides advanced first-person character controls.
-// It includes custom gravity handling, air control, head bobbing, and camera rotation during strafing.
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 public class AdvancedPlayerMovement : MonoBehaviour
@@ -29,7 +27,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
     [SerializeField] private GameObject playerWeapon; // Reference to the player's weapon
     private Vector3 originalWeaponScale; // To store the original scale of the weapon
 
-    // Gravity and Jumping
     [Header("Gravity and Jump Settings")]
     [SerializeField, Tooltip("Custom gravity scale")]
     private float gravityScale = 2.0f;
@@ -49,16 +46,11 @@ public class AdvancedPlayerMovement : MonoBehaviour
     private float groundCheckDistance = 0.1f;
 
     private bool isJumping;
-
-    // Ground checking
-    private float groundedCheckDelay = 0.05f;
-    private float lastTimeGrounded;
     private float groundCheckRadius = 0.3f; // Radius for SphereCast
 
     // Jump state
     private int currentJumpCount = 0;
     private bool canJump = true;
-    private bool wasInAir = false;
     public bool isGrounded;
     private float lastJumpTime;
 
@@ -105,16 +97,14 @@ public class AdvancedPlayerMovement : MonoBehaviour
     public float climbingSpeed = 3.0f;
     public float wallJumpForce = 10.0f; // Wall jump force
 
+    [Header("Trampoline/Bouncing Settings")]
     private bool isOnTrampoline = false;
     private float trampolineBounceMultiplier = 1.0f;
     private float lastTrampolineTouchTime = 0f;
     private float trampolineJumpThreshold = 0.2f;
-
-    // Add new fields for trampoline bounce logic
     private int bounceCount = 0;
     private const int maxBounceCount = 5; // Maximum number of bounces
     private float bounceDamping = 0.8f; // Reduction factor for each bounce
-
     private bool attemptHighBounce = false;
     private const float highBounceMultiplier = 2.0f; // Multiplier for the enhanced bounce
     private const float bounceTimingWindow = 0.2f; // Time window for enhanced bounce
@@ -221,7 +211,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-
     private void FixedUpdate()
     {
         if (!isChangingSize)
@@ -274,6 +263,22 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
+    private void ApplyCustomGravity()
+    {
+        float scaleMultiplier = transform.localScale.y / originalScale.y; // Scale multiplier based on the player's current Y scale
+
+        if (!isGrounded || rb.velocity.y < 0)
+        {
+            //falling
+            rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime * scaleMultiplier;
+        }
+        else if (rb.velocity.y > 0 && !playerControls.FPSPlayerActions.Jump.IsPressed())
+        {
+            //ascending and not holding jump
+            rb.velocity += Vector3.up * Physics.gravity.y * (gravityScale - 1) * Time.fixedDeltaTime * scaleMultiplier;
+        }
+    }
+
     private void Move()
     {
         Vector2 inputVector = playerControls.FPSPlayerActions.Move.ReadValue<Vector2>();
@@ -307,14 +312,14 @@ public class AdvancedPlayerMovement : MonoBehaviour
             Vector3 jumpDirection = Camera.main.transform.forward + Vector3.up;
             float climbJumpForce = wallJumpForce; // Use the wall jump force for climbing jump
 
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset current Y and Z velocity
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset Y and Z velocity
             rb.AddForce(jumpDirection.normalized * climbJumpForce, ForceMode.Impulse);
             StopClimbing();
         }
         else if (currentJumpCount < maxJumpCount && canJump && isGrounded)
         {
             PerformJump();
-            isJumping = true; // Set flag when jump is performed
+            isJumping = true;
         }
         else
         {
@@ -329,10 +334,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
         if (isClimbing)
         {
-            // Jump away from the wall in the direction the player is facing
             jumpDirection = transform.forward + Vector3.up;
-            jumpForceToUse = wallJumpForce; // Use the specific wall jump force
-            StopClimbing(); // Stop climbing when the player jumps off
+            jumpForceToUse = wallJumpForce;
+            StopClimbing();
         }
         else
         {
@@ -385,22 +389,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-    private void ApplyCustomGravity()
-    {
-        float scaleMultiplier = transform.localScale.y / originalScale.y; // Scale multiplier based on the player's current Y scale
-
-        if (!isGrounded || rb.velocity.y < 0)
-        {
-            // Apply stronger gravity when falling
-            rb.velocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime * scaleMultiplier;
-        }
-        else if (rb.velocity.y > 0 && !playerControls.FPSPlayerActions.Jump.IsPressed())
-        {
-            // Apply normal gravity when ascending and not holding jump
-            rb.velocity += Vector3.up * Physics.gravity.y * (gravityScale - 1) * Time.fixedDeltaTime * scaleMultiplier;
-        }
-    }
-
     private void ToggleCrouch()
     {
         isCrouching = !isCrouching;
@@ -415,10 +403,9 @@ public class AdvancedPlayerMovement : MonoBehaviour
         var transposer = cinemachineCamera.GetCinemachineComponent<CinemachineTransposer>();
         float originalFollowOffsetY = transposer.m_FollowOffset.y;
 
-        // Calculate the change in height
+        //change in height
         float heightChange = targetHeight - originalHeight;
 
-        // Declare newFollowOffsetY outside of the loop
         float newFollowOffsetY = originalFollowOffsetY;
 
         float timeElapsed = 0f;
@@ -498,16 +485,15 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
     }
 
-    private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f)
+    private void UpdatePlayerProperties(float scaleFactor, float lerpFactor = 1f) 
     {
+        //We must use this method to adjust size depened variables
         // Adjust jump force relative to the size
         float scaleJumpMultiplier = Mathf.Clamp(scaleFactor, 0.5f, 2f); // Clamp the scale factor for jump force to avoid extreme values
         jumpForce = Mathf.Lerp(jumpForce, originalJumpForce * scaleJumpMultiplier, lerpFactor);
 
         // Adjust movement speed
         moveSpeed = Mathf.Lerp(moveSpeed, originalMoveSpeed * scaleFactor, lerpFactor);
-
-        // Add other properties if needed
     }
 
     public void EnableClimbing(bool enable)
@@ -551,7 +537,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
             StopClimbing();
         }
     }
-
     private void HandleClimbingMovement()
     {
         if (isClimbing)
@@ -573,11 +558,10 @@ public class AdvancedPlayerMovement : MonoBehaviour
         return false;
     }
 
-    public void OnTrampolineEnter(float multiplier)
+    private void TransitionToTopOfSurface()
     {
-        isOnTrampoline = true;
-        trampolineBounceMultiplier = multiplier;
-        lastTrampolineTouchTime = Time.time;
+        StopClimbing();
+
     }
 
     public void OnTrampolineExit()
@@ -591,7 +575,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
         if (attemptHighBounce)
         {
             bounceForce = jumpForce * highBounceMultiplier;
-            attemptHighBounce = false; // Reset the flag
+            attemptHighBounce = false; // Reset
         }
         else
         {
@@ -599,8 +583,8 @@ public class AdvancedPlayerMovement : MonoBehaviour
         }
 
         rb.velocity = new Vector3(rb.velocity.x, bounceForce, rb.velocity.z);
-        isOnTrampoline = false; // Reset the trampoline state
-        bounceCount = 0; // Reset the bounce count
+        isOnTrampoline = false; 
+        bounceCount = 0;
     }
 
     public void ApplyTrampolineBounce(float initialBounceMultiplier)
@@ -623,7 +607,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
     {
         if (weaponObject != null)
         {
-            // Find the "Model" child object and enable it
             Transform modelTransform = weaponObject.transform;
             if (modelTransform != null)
             {
@@ -651,15 +634,6 @@ public class AdvancedPlayerMovement : MonoBehaviour
         return true; 
     }
 
-    private void TransitionToTopOfSurface()
-    {
-        StopClimbing();
-
-        // Additional logic to position the player correctly on the surface
-        // This might involve setting the player's position and rotation
-        // Example: transform.position = new Vector3(transform.position.x, other.transform.position.y, transform.position.z);
-    }
-
     private void OnCollisionEnter(Collision collision)
     {
         if ((groundLayer.value & (1 << collision.gameObject.layer)) > 0)
@@ -671,7 +645,7 @@ public class AdvancedPlayerMovement : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Trampoline"))
         {
-            lastLandingTime = Time.time; // Record the landing time
+            lastLandingTime = Time.time; //landing time
         }
 
     }

@@ -34,7 +34,6 @@ public class HUDManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // Other initialization code, if necessary
         }
         else if (Instance != this)
         {
@@ -117,8 +116,8 @@ public class HUDManager : MonoBehaviour
 
     private void EnableAndFadeOutPanel(CanvasGroup panel, float duration)
     {
-        panel.gameObject.SetActive(true); // Enable the panel first
-        panel.alpha = 1; // Set alpha to 1 (fully opaque) before fading out
+        panel.gameObject.SetActive(true);
+        panel.alpha = 1;
         StartCoroutine(FadeOutPanel(panel, duration));
     }
     private IEnumerator FadeOutPanel(CanvasGroup panel, float duration)
@@ -128,11 +127,11 @@ public class HUDManager : MonoBehaviour
         while (currentTime < duration)
         {
             currentTime += Time.deltaTime;
-            panel.alpha = Mathf.Lerp(1, 0, currentTime / duration); // Lerp from 1 (opaque) to 0 (transparent)
+            panel.alpha = Mathf.Lerp(1, 0, currentTime / duration);
             yield return null;
         }
 
-        panel.gameObject.SetActive(false); // Optionally disable the panel after fading out
+        panel.gameObject.SetActive(false);
     }
 
     // Method to update the player's health bar

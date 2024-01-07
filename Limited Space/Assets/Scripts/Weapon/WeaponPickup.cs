@@ -4,9 +4,9 @@ using TMPro;
 
 public class WeaponPickup : MonoBehaviour
 {
-    public TextMeshProUGUI promptText; // World space UI text component
-    public GameObject vfxPrefab; // Prefab for VFX
-    public AudioClip pickupSound; // Audio clip for pickup sound
+    public TextMeshProUGUI promptText;
+    public GameObject vfxPrefab; 
+    public AudioClip pickupSound;
 
     private PlayerControls playerControls;
     private bool isPlayerNear = false;
@@ -73,7 +73,6 @@ public class WeaponPickup : MonoBehaviour
         if (pickupSound != null)
             AudioSource.PlayClipAtPoint(pickupSound, transform.position);
 
-        // Enable the weapon for the player
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {

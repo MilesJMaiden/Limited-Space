@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 190fb353406e64947b5c2db5615914f7
   - enabled: 1
+    path: Assets/Scenes/PlotStart.unity
+    guid: 98a5ed09597579f42818dc3b590cee69
+  - enabled: 1
     path: Assets/Scenes/Sandbox.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects: {}

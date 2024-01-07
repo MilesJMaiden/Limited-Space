@@ -33,7 +33,7 @@ public class ClimbableSurface : MonoBehaviour
 
     private IEnumerator ResetTransitionState()
     {
-        yield return new WaitForSeconds(1f); // Adjust time as needed
+        yield return new WaitForSeconds(1f); // Adjust
         isPlayerTransitioning = false;
     }
 

@@ -20,7 +20,7 @@ public class TurretEnemy : MonoBehaviour
 
     public Transform rotatablePart;
 
-    public GameObject vfxPrefab; // Visual effect prefab
+    public GameObject vfxPrefab;
     public AudioSource audioSourcePrefab;
 
     public Transform playerCameraTransform;
@@ -104,7 +104,7 @@ public class TurretEnemy : MonoBehaviour
     {
         // Instantiate projectile and set its direction
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-        EnemyProjectile enemyProjectileScript = projectile.GetComponent<EnemyProjectile>(); // Corrected to EnemyProjectile
+        EnemyProjectile enemyProjectileScript = projectile.GetComponent<EnemyProjectile>();
         if (enemyProjectileScript != null)
         {
             enemyProjectileScript.SetDirection((playerCameraTransform.transform.position - firePoint.position).normalized);
@@ -116,13 +116,13 @@ public class TurretEnemy : MonoBehaviour
     }
     private void ResetFireTimer()
     {
-        fireTimer = 1f / (1 + fireRateIncreaseTimer * fireRateAcceleration); // Reset fire timer based on the increased rate
+        fireTimer = 1f / (1 + fireRateIncreaseTimer * fireRateAcceleration);
     }
 
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        UpdateHealthUI(); // Make sure the health is updated here
+        UpdateHealthUI();
         if (currentHealth <= 0)
         {
             Die();
@@ -145,10 +145,9 @@ public class TurretEnemy : MonoBehaviour
         healthSlider.value = currentHealth;
     }
 
-
     void OnDrawGizmos()
     {
-        if (rotatablePart != null)
+        if (rotatablePart != null) //Visualize shooting/ rotation arc
         {
             Gizmos.color = Color.red;
             Vector3 forward = rotatablePart.forward;

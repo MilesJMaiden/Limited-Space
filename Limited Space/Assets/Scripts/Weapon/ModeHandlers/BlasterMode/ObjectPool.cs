@@ -13,7 +13,7 @@ public class ObjectPool : MonoBehaviour
         Instance = this;
 
         // Pre-instantiate objects and add them to the pool
-        int poolSize = 10; // Adjust the size as needed
+        int poolSize = 10; // Adjust
         for (int i = 0; i < poolSize; i++)
         {
             GameObject newObj = Instantiate(objectPrefab, transform);
@@ -26,7 +26,6 @@ public class ObjectPool : MonoBehaviour
     {
         if (objects.Count == 0)
         {
-            // Optionally create a new object if the pool is empty
             GameObject newObj = Instantiate(objectPrefab, position, rotation, transform);
             return newObj;
         }

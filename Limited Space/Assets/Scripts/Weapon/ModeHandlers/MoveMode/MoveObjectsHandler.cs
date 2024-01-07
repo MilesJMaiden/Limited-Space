@@ -124,10 +124,6 @@ public class MoveObjectsHandler
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
-
-        // Add any additional reset logic if needed, like resetting position or rotation
-        // For example: obj.transform.position = initialPosition;
-        //              obj.transform.rotation = initialRotation;
     }
 
     private void DisablePhysics(GameObject obj)

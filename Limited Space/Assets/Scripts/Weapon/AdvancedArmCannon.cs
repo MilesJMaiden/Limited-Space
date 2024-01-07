@@ -7,7 +7,6 @@ public class AdvancedArmCannon : MonoBehaviour
     private AdvancedPlayerMovement playerMovement;
     private HUDManager hudManager;
 
-
     public enum WeaponMode { MoveObjects, ModifySurfaces, Blaster }
     private WeaponMode currentMode;
 
@@ -104,7 +103,7 @@ public class AdvancedArmCannon : MonoBehaviour
         do
         {
             currentMode = (WeaponMode)(((int)currentMode + 1) % System.Enum.GetNames(typeof(WeaponMode)).Length);
-        } while (!IsModeUnlocked(currentMode) && currentMode != originalMode); // Check if we have looped back to the original mode
+        } while (!IsModeUnlocked(currentMode) && currentMode != originalMode);
 
         // Update the HUD
         if (hudManager != null)
@@ -154,7 +153,6 @@ public class AdvancedArmCannon : MonoBehaviour
             currentMode = mode;
         }
 
-        // Update the HUD
         if (hudManager != null)
         {
             hudManager.EnableWeaponModeIndicator(mode);
@@ -214,6 +212,4 @@ public class AdvancedArmCannon : MonoBehaviour
                 break;
         }
     }
-
-    // Pass on necessary references or data to handlers as needed
 }

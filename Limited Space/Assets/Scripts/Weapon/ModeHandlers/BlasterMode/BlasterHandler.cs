@@ -7,8 +7,8 @@ public class BlasterHandler
     private float chargeTime;
     private float maxChargeTime;
 
-    public GameObject projectilePrefab; // Assign in the Inspector
-    public Transform firePoint; // Assign the FirePoint Transform in the Inspector
+    public GameObject projectilePrefab;
+    public Transform firePoint; 
 
     // Variables for projectile behavior
     public float minProjectileSize = 1.5f;
@@ -21,7 +21,7 @@ public class BlasterHandler
     public BlasterHandler(AdvancedArmCannon armCannon)
     {
         this.armCannon = armCannon;
-        this.maxChargeTime = 2.0f; // Example value
+        maxChargeTime = 2.0f;
         firePoint = firePoint ?? armCannon.transform.Find("FirePoint");
     }
 
@@ -53,9 +53,9 @@ public class BlasterHandler
             rb.isKinematic = false;
             rb.velocity = firePoint.forward * speed;
 
-            // Additional setup like enabling projectile's functionality, setting its damage, etc.
+            // TODO setting its damage using the lerped size.
 
-            currentProjectile = null; // Reset current projectile
+            currentProjectile = null; // Reset
         }
 
         isCharging = false;

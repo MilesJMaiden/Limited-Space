@@ -81,6 +81,6 @@ public class Door : MonoBehaviour
             yield return null;
         }
 
-        transform.position = endPos; // Ensure door reaches the final position
+        transform.position = endPos;
     }
 }
